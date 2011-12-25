@@ -64,9 +64,28 @@ public class Neo4jHandler {
 	   this.nodeIndex.add( graphNode, Neo4jNode.WORD_PROPERTY, node.getWord());
 	}
 	
+	/**
+	 * Create relationship between two nodes
+	 * @param source the source node
+	 * @param Destination the destination node
+	 * @param relationName the relationship name
+	 * @return the created relationship
+	 */
+	public Relationship createRelationship(Node source, Node Destination, String relationName){
+		RelationshipType type = DynamicRelationshipType.withName( relationName );
+		Relationship relationship = source.createRelationshipTo(Destination,type);
+		return relationship;
+	}
+	
 	
 	public void InsertAndIndexDocument(Document doc){
 		
+	}
+	
+	public ArrayList<Neo4jNode> loadDocument(Neo4jNode firstNode){
+		ArrayList<Neo4jNode> nodes = new ArrayList<Neo4jNode>();
+		
+		return nodes;
 	}
 	
 	/**
@@ -78,7 +97,7 @@ public class Neo4jHandler {
 	 */
 	public byte[] serializeObject(Object obj) throws IOException, ClassNotFoundException {
 		ObjectOutputStream os = null;
-		ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1000);
+		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 		os = new ObjectOutputStream(new BufferedOutputStream(byteStream));
 		os.flush();
 		os.writeObject(obj);

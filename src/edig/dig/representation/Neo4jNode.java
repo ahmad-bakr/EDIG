@@ -1,6 +1,7 @@
 package edig.dig.representation;
 
 public class Neo4jNode {
+	// Don't forget when you creating new property to add it to the insertAndIndex method
 	public static final String WORD_PROPERTY = "word";
 	private String word;
 
