@@ -1,5 +1,13 @@
 package edig.dig.representation;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -36,6 +44,12 @@ public class Neo4jHandler {
 		return this.neo4jOperator;
 	}
 	
+	public Node findNodeByProperty(String property, String value){
+		return this.nodeIndex.get(property, value).getSingle();
+	}
+	
+	public void insertAndIndexNode(){}
+	
 	/**
 	 * Shutdown the database
 	 * @param graphDb graph database instance
@@ -58,13 +72,53 @@ public class Neo4jHandler {
 		return true;
 	}
 	
+	/**
+	 * Method to serialize object to sequence of bytes (to store in neo4j)
+	 * @param obj The object to be serialized
+	 * @return serialized
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public byte[] serializeObject(Object obj) throws IOException, ClassNotFoundException {
+		ObjectOutputStream os = null;
+		ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1000);
+		os = new ObjectOutputStream(new BufferedOutputStream(byteStream));
+		os.flush();
+		os.writeObject(obj);
+		os.flush();
+		byte[] sendBuf = byteStream.toByteArray();
+		os.close();
+		return sendBuf;
+	}
+	
+	/**
+	 * Method to deserialize sequence of bytes
+	 * @param buffer the buffer
+	 * @return object 
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public Object deserializeObject(byte [] buffer) throws IOException, ClassNotFoundException{
+		ByteArrayInputStream is = new ByteArrayInputStream(buffer);
+		ObjectInput oi = new ObjectInputStream(is);
+		Object newObj = oi.readObject();
+		oi.close();
+		return newObj;
+	}
+	
 	
 	/**
 	 * @param args
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		GraphDatabaseService graphDb = new EmbeddedGraphDatabase( "/media/disk/master/Master/EDIG_DB" );
+		Index<Node> nodeIndex2 = graphDb.index().forNodes( "nodes" );
+		ArrayList<String> array = new ArrayList<String>();
+		array.add("ahmad");
+		array.add("Ahmad2");
 		// indexing .. http://wiki.neo4j.org/content/Indexing_with_IndexService
 		Transaction tx = graphDb.beginTx();
 		try
@@ -73,8 +127,8 @@ public class Neo4jHandler {
 			Node secondNode = graphDb.createNode();
 			RelationshipType type = DynamicRelationshipType.withName( "rel" );
 			Relationship relationship = firstNode.createRelationshipTo(secondNode,type);
-			
-			firstNode.setProperty( "message", "Hello, " );
+
+			firstNode.setProperty( "message", array.toString());
 			secondNode.setProperty( "message", "world!" );
 			relationship.setProperty( "message", "brave Neo4j " );
 			
