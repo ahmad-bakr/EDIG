@@ -44,32 +44,29 @@ public class Neo4jHandler {
 		return this.neo4jOperator;
 	}
 	
+	/**
+	 * Method to find node by property (mostly the property used to index the node)
+	 * @param property the property
+	 * @param value the value
+	 * @return the node if found
+	 */
 	public Node findNodeByProperty(String property, String value){
 		return this.nodeIndex.get(property, value).getSingle();
 	}
 	
-	public void insertAndIndexNode(){}
-	
 	/**
-	 * Shutdown the database
-	 * @param graphDb graph database instance
+	 * Insert and index node in Neo4j
+	 * @param node 
 	 */
-	public void registerShutdownHook( final GraphDatabaseService graphDb )
-	{
-	    Runtime.getRuntime().addShutdownHook( new Thread()
-	    {
-	        @Override
-	        public void run()
-	        {
-	            graphDb.shutdown();
-	        }
-	    } );
+	public void insertAndIndexNode(Neo4jNode node){
+		 Node graphNode = graphDb.createNode();
+	   graphNode.setProperty( Neo4jNode.WORD_PROPERTY, node.getWord() );
+	   this.nodeIndex.add( graphNode, Neo4jNode.WORD_PROPERTY, node.getWord());
 	}
 	
 	
-	public boolean InsertAndIndexDocument(Document doc){
+	public void InsertAndIndexDocument(Document doc){
 		
-		return true;
 	}
 	
 	/**
@@ -106,7 +103,23 @@ public class Neo4jHandler {
 		return newObj;
 	}
 	
+	/**
+	 * Shutdown the database
+	 * @param graphDb graph database instance
+	 */
+	public void registerShutdownHook( final GraphDatabaseService graphDb )
+	{
+	    Runtime.getRuntime().addShutdownHook( new Thread()
+	    {
+	        @Override
+	        public void run()
+	        {
+	            graphDb.shutdown();
+	        }
+	    } );
+	}
 	
+
 	/**
 	 * @param args
 	 * @throws IOException 
