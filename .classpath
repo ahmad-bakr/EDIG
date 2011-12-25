@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/geronimo-jta_1.1_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/lucene-core-3.1.0.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-backup-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-com-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-cypher-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-enterprise-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-graph-algo-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-graph-matching-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-ha-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-jmx-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-kernel-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-kernel-1.4-tests.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-lucene-index-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-management-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-shell-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/neo4j-udc-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/org.apache.servicemix.bundles.jline-0.9.94_1.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/org.apache.servicemix.bundles.netty-3.2.3.Final_1.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/scala-library-2.9.0-1.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/server-api-1.4.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/zookeeper-3.3.2.jar"/>
+	<classpathentry kind="lib" path="/home/ahmad/workspace_java/lingpipe-4.1.0/lingpipe-4.1.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
