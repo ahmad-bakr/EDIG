@@ -61,7 +61,7 @@ public class Neo4jHandler {
 	 * @throws IOException 
 	 */
 	public void insertAndIndexNode(Neo4jNode node) throws IOException, ClassNotFoundException{
-		 Node graphNode = graphDb.createNode();
+		 Node graphNode = this.graphDb.createNode();
 	   graphNode.setProperty( Neo4jNode.WORD_PROPERTY, node.getWord() );
 	   graphNode.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(node.getClusterImportanceHash()));
 	   graphNode.setProperty(Neo4jNode.DOCUMENT_TABLE, serializeObject(node.getDocumentTable()));
@@ -83,7 +83,16 @@ public class Neo4jHandler {
 	
 	
 	public void InsertAndIndexDocument(Document doc){
-		
+		Transaction tx = this.graphDb.beginTx();
+		try
+		{
+
+			tx.success();
+		}
+		finally
+		{
+		  tx.finish();
+		}
 	}
 	
 	public ArrayList<Neo4jNode> loadDocument(Neo4jNode firstNode){
