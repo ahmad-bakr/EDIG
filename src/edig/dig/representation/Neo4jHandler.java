@@ -57,10 +57,14 @@ public class Neo4jHandler {
 	/**
 	 * Insert and index node in Neo4j
 	 * @param node 
+	 * @throws ClassNotFoundException 
+	 * @throws IOException 
 	 */
-	public void insertAndIndexNode(Neo4jNode node){
+	public void insertAndIndexNode(Neo4jNode node) throws IOException, ClassNotFoundException{
 		 Node graphNode = graphDb.createNode();
 	   graphNode.setProperty( Neo4jNode.WORD_PROPERTY, node.getWord() );
+	   graphNode.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(node.getClusterImportanceHash()));
+	   graphNode.setProperty(Neo4jNode.DOCUMENT_TABLE, serializeObject(node.getDocumentTable()));
 	   this.nodeIndex.add( graphNode, Neo4jNode.WORD_PROPERTY, node.getWord());
 	}
 	

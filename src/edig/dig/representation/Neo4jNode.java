@@ -84,5 +84,21 @@ public class Neo4jNode {
 	public ArrayList<String> getDocumentEntity(String documentID){
 		return this.documentTable.get(documentID);
 	}
+	
+	/**
+	 * Get the cluster importance table
+	 * @return cluster importance table
+	 */
+	public Hashtable<String, Double> getClusterImportanceHash() {
+		return clusterImportanceHash;
+	}
+	
+	/**
+	 * Get the document table
+	 * @return document table
+	 */
+	public Hashtable<String, ArrayList<String>> getDocumentTable() {
+		return documentTable;
+	}
 
 }
