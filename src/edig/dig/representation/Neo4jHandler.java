@@ -18,6 +18,8 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import edig.entites.Document;
+import edig.entites.Sentence;
+import edig.entites.Word;
 
 public class Neo4jHandler {
 	private Neo4jHandler neo4jOperator = null;
@@ -86,6 +88,23 @@ public class Neo4jHandler {
 		Transaction tx = this.graphDb.beginTx();
 		try
 		{
+			ArrayList<Sentence> sentences = doc.getSentences();
+			for (Sentence sentence : sentences) { //iterate over sentences
+				ArrayList<Word> words = sentence.getWords();
+				for (Word word : words) { //iterate over words of sentence
+					Node currentWord = this.nodeIndex.get(Neo4jNode.WORD_PROPERTY, word.getContent()).getSingle();
+					if(currentWord == null) { //word not found in the index (new word)
+						
+					}else{ //word exists
+						
+					} //end if
+					
+					
+					
+				}//end loop for words
+			}// end loop for sentences
+			
+			
 
 			tx.success();
 		}
@@ -168,28 +187,39 @@ public class Neo4jHandler {
 		Transaction tx = graphDb.beginTx();
 		try
 		{
-			Node firstNode = graphDb.createNode();
-			Node secondNode = graphDb.createNode();
-			RelationshipType type = DynamicRelationshipType.withName( "rel" );
-			Relationship relationship = firstNode.createRelationshipTo(secondNode,type);
-
-			firstNode.setProperty( "message", array.toString());
-			secondNode.setProperty( "message", "world!" );
-			relationship.setProperty( "message", "brave Neo4j " );
-			
-			System.out.print( firstNode.getProperty( "message" ) );
-			System.out.print( relationship.getProperty( "message" ) );
-			System.out.print( secondNode.getProperty( "message" ) );
+		//	nodeIndex2.get(property, value).getSingle();
+				Node node = nodeIndex2.get("message","node3").getSingle();
+				if (node == null){
+					System.out.println("node not found");
+				}
+				//System.out.println(node.getProperty("prop2"));
+				//node.setProperty("prop2", "prop2Value");
+				//nodeIndex2.add( node, "message", "node2");
+//			Node firstNode = graphDb.createNode();
+//			Node secondNode = graphDb.createNode();
+//			RelationshipType type = DynamicRelationshipType.withName( "rel" );
+//			Relationship relationship = firstNode.createRelationshipTo(secondNode,type);
+//
+//			firstNode.setProperty( "message", array.toString());
+//			secondNode.setProperty( "message", "world!" );
+//			relationship.setProperty( "message", "brave Neo4j " );
+//			nodeIndex2.add( firstNode, "message", "node1");
+//			nodeIndex2.add( secondNode, "message", "node2");
+//			
+			 
+//			System.out.print( firstNode.getProperty( "message" ) );
+//			System.out.print( relationship.getProperty( "message" ) );
+//			System.out.print( secondNode.getProperty( "message" ) );
 			
 		  // let's remove the data
-			for ( Node node : graphDb.getAllNodes() )
-			{
-			    for ( Relationship rel : node.getRelationships() )
-			    {
-			        rel.delete();
-			    }
-			    node.delete();
-			}
+//			for ( Node node : graphDb.getAllNodes() )
+//			{
+//			    for ( Relationship rel : node.getRelationships() )
+//			    {
+//			        rel.delete();
+//			    }
+//			    node.delete();
+//			}
 		  tx.success();
 		}
 		finally
