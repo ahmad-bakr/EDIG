@@ -7,7 +7,7 @@ import java.util.ArrayList;
  *
  */
 public class Document {
-	private int id;
+	private String id;
 	private ArrayList<Sentence> sentences;
 	
 	/**
@@ -21,7 +21,7 @@ public class Document {
 	 * Set document id
 	 * @param id document id
 	 */
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	
@@ -29,7 +29,7 @@ public class Document {
 	 * Get document id
 	 * @return document id
 	 */
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 

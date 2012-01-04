@@ -8,6 +8,8 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Hashtable;
+
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -83,8 +85,31 @@ public class Neo4jHandler {
 		return relationship;
 	}
 	
+	/**
+	 * Convert from node to Neo4j node 
+	 * @param node node
+	 * @return Neo4j object
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public Neo4jNode convertToNeo4jNode(Node node) throws IOException, ClassNotFoundException{
+		Neo4jNode neo4jNode = new Neo4jNode((String) node.getProperty(Neo4jNode.WORD_PROPERTY));
+		neo4jNode.setDocumentTable((Hashtable<String, ArrayList<String>>) deserializeObject((byte[]) node.getProperty(Neo4jNode.DOCUMENT_TABLE)));
+		neo4jNode.setClusterImportanceHash((Hashtable<String, Double>) deserializeObject((byte[]) node.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)));
+		return neo4jNode;
+	}
 	
-	public void InsertAndIndexDocument(Document doc){
+	/**
+	 * Insert document to Neo4j
+	 * @param doc document object
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public void InsertAndIndexDocument(Document doc) throws IOException, ClassNotFoundException{
+		Node currentNode = null;
+		Node previousNode = null;
+		int sentenceNumber = 0;
+		int wordNumber = 0;
 		Transaction tx = this.graphDb.beginTx();
 		try
 		{
@@ -92,20 +117,40 @@ public class Neo4jHandler {
 			for (Sentence sentence : sentences) { //iterate over sentences
 				ArrayList<Word> words = sentence.getWords();
 				for (Word word : words) { //iterate over words of sentence
-					Node currentWord = this.nodeIndex.get(Neo4jNode.WORD_PROPERTY, word.getContent()).getSingle();
-					if(currentWord == null) { //word not found in the index (new word)
-						
+				  currentNode =findNodeByProperty(Neo4jNode.WORD_PROPERTY, word.getContent());
+					if(currentNode == null) { //word not found in the index (new word)
+						Neo4jNode newNode = new Neo4jNode(word.getContent());
+						ArrayList<String> documentEntity = new ArrayList<String>();
+						documentEntity.add("1");
+						documentEntity.add(String.valueOf(sentenceNumber)+"_"+String.valueOf(wordNumber));
+						newNode.addToDocumentTable(doc.getId(), documentEntity);
+						insertAndIndexNode(newNode);
+						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, word.getContent());
 					}else{ //word exists
-						
+						Neo4jNode existingNode = convertToNeo4jNode(currentNode);
+						if(existingNode.isInDocumentTable(doc.getId())){ // if the word was seen before in the current document
+							ArrayList<String> documentEntity = existingNode.getDocumentEntity(doc.getId());
+							int tf= Integer.parseInt(documentEntity.get(0)) + 1;
+							documentEntity.set(0, String.valueOf(tf));
+							documentEntity.add(String.valueOf(sentenceNumber)+"_"+String.valueOf(wordNumber));
+							existingNode.addToDocumentTable(doc.getId(), documentEntity);
+						}else{ //if it's the first time to see the current word in the current document
+							ArrayList<String> documentEntity = new ArrayList<String>();
+							documentEntity.add("1");
+							documentEntity.add(String.valueOf(sentenceNumber)+"_"+String.valueOf(wordNumber));
+							existingNode.addToDocumentTable(doc.getId(), documentEntity);
+						}// end if
+						insertAndIndexNode(existingNode);
+						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, word.getContent());
 					} //end if
-					
-					
-					
+					if(currentNode !=null && previousNode != null){
+						createRelationship(previousNode, currentNode, "document_"+doc.getId());
+					}
+					previousNode = currentNode;
+					wordNumber++;
 				}//end loop for words
+				sentenceNumber++;
 			}// end loop for sentences
-			
-			
-
 			tx.success();
 		}
 		finally
@@ -227,7 +272,8 @@ public class Neo4jHandler {
 		    tx.finish();
 		}
 		
-		
+		int i = 10;
+		System.out.println(String.valueOf(i));
 	}
 
 }

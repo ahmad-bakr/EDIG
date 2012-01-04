@@ -77,6 +77,15 @@ public class Neo4jNode {
 	}
 	
 	/**
+	 * Add document entity to the document table
+	 * @param documentID document ID
+	 * @param value the entity in the document table
+	 */
+	public void addToDocumentTable(String documentID, ArrayList<String> value){
+		this.documentTable.put(documentID, value);
+	}
+	
+	/**
 	 * Return the entity in the document table corresponding to the document id
 	 * @param documentID document id
 	 * @return document entity in the document table corresponding to document id
@@ -99,6 +108,24 @@ public class Neo4jNode {
 	 */
 	public Hashtable<String, ArrayList<String>> getDocumentTable() {
 		return documentTable;
+	}
+	
+	/**
+	 * Set cluster importance hash
+	 * @param clusterImportanceHash cluster importance hash
+	 */
+	public void setClusterImportanceHash(
+			Hashtable<String, Double> clusterImportanceHash) {
+		this.clusterImportanceHash = clusterImportanceHash;
+	}
+	
+	/**
+	 * Set document table
+	 * @param documentTable document table
+	 */
+	public void setDocumentTable(
+			Hashtable<String, ArrayList<String>> documentTable) {
+		this.documentTable = documentTable;
 	}
 
 }
