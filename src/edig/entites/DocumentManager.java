@@ -20,10 +20,10 @@ public class DocumentManager {
 	 * @return Document object
 	 * @throws Exception
 	 */
-	public static Document createDocument(String title, String body) throws Exception{
+	public static Document createDocument(String id,String title, String body) throws Exception{
 		Sentence titleSentence = flatten(parser.parseText(title));
 		ArrayList<Sentence> bodySentences = parser.parseText(body);
-		Document doc = new Document();
+		Document doc = new Document(id);
 		doc.addSentence(titleSentence);
 		for (int i = 0; i < bodySentences.size(); i++) {
 			doc.addSentence(bodySentences.get(i));
@@ -43,7 +43,7 @@ public class DocumentManager {
 	public static void main(String[] args) throws Exception {
 		String title = "Hello, This is title. Ahmad Bakr";
 		String body ="Hello, This is body. How is going?";
-		Document doc = DocumentManager.createDocument( title, body);
+		Document doc = DocumentManager.createDocument("doc1" ,title, body);
 		for (int i = 0; i < doc.getSentences().size(); i++) {
 			for (int j = 0; j < doc.getSentences().get(i).getWords().size(); j++) {
 				System.out.print(doc.getSentences().get(i).getWords().get(j).getContent() + " ");

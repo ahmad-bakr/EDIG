@@ -13,7 +13,8 @@ public class Document {
 	/**
 	 * Constructor
 	 */
-	public Document() {
+	public Document(String id) {
+		this.id = id;
 		this.sentences = new ArrayList<Sentence>();
 	}
 

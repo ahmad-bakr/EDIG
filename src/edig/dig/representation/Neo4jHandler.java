@@ -85,6 +85,14 @@ public class Neo4jHandler {
 		nodeIndex.add(graphNode, Neo4jNode.WORD_PROPERTY, node.getWord());
 	}
 
+	public void modifyAndIndexNode(Neo4jNode existingNode, Node nodeToBeModified) throws IOException, ClassNotFoundException{
+		nodeToBeModified.setProperty(Neo4jNode.CLUSTER_IMPORTANCE,
+				serializeObject(existingNode.getClusterImportanceHash()));
+		nodeToBeModified.setProperty(Neo4jNode.DOCUMENT_TABLE,
+				serializeObject(existingNode.getDocumentTable()));
+		nodeIndex.add(nodeToBeModified, Neo4jNode.WORD_PROPERTY, existingNode.getWord());
+		
+	}
 	/**
 	 * Create relationship between two nodes
 	 * 
@@ -143,6 +151,7 @@ public class Neo4jHandler {
 		try {
 			ArrayList<Sentence> sentences = doc.getSentences();
 			for (Sentence sentence : sentences) { // iterate over sentences
+				wordNumber = 0;
 				ArrayList<Word> words = sentence.getWords();
 				for (Word word : words) { // iterate over words of sentence
 					currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY,
@@ -179,7 +188,7 @@ public class Neo4jHandler {
 									+ String.valueOf(wordNumber));
 							existingNode.addToDocumentTable(doc.getId(), documentEntity);
 						}// end if
-						insertAndIndexNode(existingNode);
+						modifyAndIndexNode(existingNode, currentNode);
 						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY,
 								word.getContent());
 					} // end if
