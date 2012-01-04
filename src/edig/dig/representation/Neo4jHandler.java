@@ -63,6 +63,10 @@ public class Neo4jHandler {
 		return nodeIndex.get(property, value).getSingle();
 	}
 
+	/**
+	 * Open transaction to neo4j
+	 * @return transaction
+	 */
 	public Transaction getTransaction() {
 		return graphDb.beginTx();
 	}
@@ -85,6 +89,13 @@ public class Neo4jHandler {
 		nodeIndex.add(graphNode, Neo4jNode.WORD_PROPERTY, node.getWord());
 	}
 
+	/**
+	 * Modify existing node in neo4j
+	 * @param existingNode existing node
+	 * @param nodeToBeModified the node to be modified in neo4j
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public void modifyAndIndexNode(Neo4jNode existingNode, Node nodeToBeModified) throws IOException, ClassNotFoundException{
 		nodeToBeModified.setProperty(Neo4jNode.CLUSTER_IMPORTANCE,
 				serializeObject(existingNode.getClusterImportanceHash()));
