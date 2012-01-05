@@ -26,5 +26,6 @@
 	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="/media/disk/neo4j-enterprise-1.4/lib/zookeeper-3.3.2.jar"/>
 	<classpathentry kind="lib" path="/home/ahmad/workspace_java/lingpipe-4.1.0/lingpipe-4.1.0.jar"/>
+	<classpathentry kind="lib" path="/home/ahmad/workspace_java/EDIG/jsoup-1.6.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
