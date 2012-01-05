@@ -8,6 +8,8 @@ import java.util.ArrayList;
  */
 public class Document {
 	private String id;
+	private String orginalCluster;
+	private ArrayList<String> predictedClusters;
 	private ArrayList<Sentence> sentences;
 	
 	/**
@@ -15,6 +17,7 @@ public class Document {
 	 */
 	public Document(String id) {
 		this.id = id;
+		this.predictedClusters = new ArrayList<String>();
 		this.sentences = new ArrayList<Sentence>();
 	}
 
@@ -48,6 +51,38 @@ public class Document {
 	 */
 	public ArrayList<Sentence> getSentences(){
 		return this.sentences;
+	}
+	
+	/**
+	 * Get original cluster
+	 * @return original cluster id
+	 */
+	public String getOrginalCluster() {
+		return orginalCluster;
+	}
+	
+	/**
+	 * Set original cluster
+	 * @param orginalCluster orginal cluster id
+	 */
+	public void setOrginalCluster(String orginalCluster) {
+		this.orginalCluster = orginalCluster;
+	}
+	
+	/**
+	 * Add predicted cluster
+	 * @param clusterID predicted cluster id
+	 */
+	public void addPredictedCluster(String clusterID){
+		this.predictedClusters.add(clusterID);
+	}
+	
+	/**
+	 * Get predicted clusters
+	 * @return predicted clusters
+	 */
+	public ArrayList<String> getPredictedClusters() {
+		return predictedClusters;
 	}
 	
 	
