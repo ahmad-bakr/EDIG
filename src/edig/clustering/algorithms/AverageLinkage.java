@@ -1,5 +1,5 @@
 package edig.clustering.algorithms;
 
-public class KNN {
+public class AverageLinkage {
 
 }
