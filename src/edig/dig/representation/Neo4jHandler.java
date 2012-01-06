@@ -41,10 +41,10 @@ public class Neo4jHandler {
 	 * 
 	 * @return instance of the graph database
 	 */
-	public static Neo4jHandler getInstance() {
+	public static Neo4jHandler getInstance(String databasePath) {
 		if (neo4jOperator == null) {
 			neo4jOperator = new Neo4jHandler();
-			graphDb = new EmbeddedGraphDatabase("/media/disk/master/Master/EDIG_DB");
+			graphDb = new EmbeddedGraphDatabase(databasePath);
 			nodeIndex = graphDb.index().forNodes("nodes");
 			return neo4jOperator;
 		}
@@ -306,34 +306,23 @@ public class Neo4jHandler {
 		// TODO Auto-generated method stub
 		String title = "Hello, This is title. Ahmad Bakr";
 		String body ="Hello, This is body. How is going?";
-		Document doc = DocumentManager.createDocument("doc1" ,title, body);
-		Document doc2 = DocumentManager.createDocument("doc2" ,title, body);		
-		Neo4jHandler handler = Neo4jHandler.getInstance();
+//		Document doc = DocumentManager.createDocument("doc1" ,title, body);
+//		Document doc2 = DocumentManager.createDocument("doc2" ,title, body);		
+		Neo4jHandler handler = Neo4jHandler.getInstance("/media/disk/master/Master/EDIG_DB");
 //		handler.InsertAndIndexDocument(doc);
 //		handler.InsertAndIndexDocument(doc2);
-//		System.out.println("Done");
-//		Transaction tx = handler.getTransaction();
-//		try {
-//			Neo4jNode node1 = new Neo4jNode("node1_test");
-//			ArrayList<String> documentEntity1 = new ArrayList<String>();
-//			documentEntity1.add("1");
-//			documentEntity1.add("1_2");
-//			node1.addToDocumentTable("document1", documentEntity1);
-//			handler.insertAndIndexNode(node1);
-//			tx.success();
-//		} finally {
-//			tx.finish();
-//		}
+
+		
 		Node node = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "Hello");
 		Node node2 = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "This");
 		for ( Relationship rel : node.getRelationships(Direction.OUTGOING) )
 		{
-		//	System.out.println(rel.getType().toString());
+			System.out.println(rel.getType().toString());
 		}
 		System.out.println(handler.doesRelationsExist(node, node2, "document_doc1"));
  		Neo4jNode convertedNode = handler.convertToNeo4jNode(node);
-	//	System.out.println(convertedNode.getDocumentTable().get("doc1").toString());
-	//	System.out.println(convertedNode.getDocumentTable().get("doc2").toString());
+		System.out.println(convertedNode.getDocumentTable().get("doc1").toString());
+		System.out.println(convertedNode.getDocumentTable().get("doc2").toString());
 
 	}
 
