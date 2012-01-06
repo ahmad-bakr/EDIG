@@ -10,10 +10,12 @@ import edig.entites.DocumentManager;
 public class UWCANDataset implements DatasetLoader {
 	private Hashtable<String, Document> documentHash;
 	private String datasetPath;
+	private int numberOfDocument;
 	
 	public UWCANDataset(String path) {
 		this.datasetPath = path;
 		this.documentHash = new Hashtable<String, Document>();
+		this.numberOfDocument =0;
 	}
 	
 	
@@ -25,6 +27,7 @@ public class UWCANDataset implements DatasetLoader {
     	String categoryName = categories[i];
   		String[] docsInCategory = new File(this.datasetPath+"/"+categoryName).list();
     	for (int j = 0; j < docsInCategory.length; j++) {
+    		this.numberOfDocument++;
     		String documentName = docsInCategory[j];
     		File input = new File(this.datasetPath+"/"+categoryName+"/"+documentName);
     		org.jsoup.nodes.Document doc = Jsoup.parse(input, "UTF-8", "");
@@ -42,6 +45,12 @@ public class UWCANDataset implements DatasetLoader {
 	public Document getDocument(String documentID) {
 		return this.documentHash.get(documentID);
 	}
+	
+	@Override
+	public int numberOfDocuments() {
+		return this.numberOfDocument;
+	}
+
 
 	public static void main(String[] args) throws Exception {
 		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
@@ -59,6 +68,8 @@ public class UWCANDataset implements DatasetLoader {
 
 
 	}
+
+
 
 
 

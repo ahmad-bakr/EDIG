@@ -10,5 +10,6 @@ public interface DatasetLoader {
 	
 	public Hashtable<String, Document> loadDocument() throws Exception; 
 	public Document getDocument(String documentID);
+	public int numberOfDocuments();
 
 }
