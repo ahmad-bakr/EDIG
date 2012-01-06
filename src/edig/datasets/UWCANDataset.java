@@ -1,26 +1,24 @@
 package edig.datasets;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
+import java.util.Enumeration;
+import java.util.Hashtable;
 import org.jsoup.Jsoup;
-
 import edig.entites.Document;
 import edig.entites.DocumentManager;
 
 public class UWCANDataset implements DatasetLoader {
-	private ArrayList<Document> documents ;
+	private Hashtable<String, Document> documentHash;
 	private String datasetPath;
 	
 	public UWCANDataset(String path) {
 		this.datasetPath = path;
-		this.documents = new ArrayList<Document>();
+		this.documentHash = new Hashtable<String, Document>();
 	}
 	
 	
 	@Override
-	public ArrayList<Document> loadDocument() throws Exception {
+	public Hashtable<String, Document> loadDocument() throws Exception {
 		File dir = new File(this.datasetPath);
     String[] categories = dir.list();
     for (int i = 0; i < categories.length; i++) {
@@ -34,16 +32,24 @@ public class UWCANDataset implements DatasetLoader {
 				String body = doc.body().text().replaceAll("(\\r|\\n)", ". ");;
 				Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
 				stemmedDocument.setOrginalCluster(categoryName);
-				this.documents.add(stemmedDocument);
+				this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
 			}// end loop over documents
 		}// end loop over categories
-		return this.documents;
+		return this.documentHash;
 	}
 	
+	@Override
+	public Document getDocument(String documentID) {
+		return this.documentHash.get(documentID);
+	}
+
 	public static void main(String[] args) throws Exception {
 		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
-		ArrayList<Document> docs = dataset.loadDocument();
-		Document doc = docs.get(1);
+		Hashtable<String, Document> docsHash = dataset.loadDocument();
+		Enumeration e = docsHash.keys();
+		Document doc = docsHash.get(e.nextElement());
+		System.out.println(doc.getOrginalCluster()+ "  "+ doc.getId());
+		System.out.println("********************");
 		for (int i = 0; i < doc.getSentences().size(); i++) {
 			for (int j = 0; j < doc.getSentences().get(i).getWords().size(); j++) {
 				System.out.print(doc.getSentences().get(i).getWords().get(j).getContent() + " ");
@@ -51,8 +57,9 @@ public class UWCANDataset implements DatasetLoader {
 			System.out.println("");
 		} 
 
-		System.out.println(docs.get(0).getSentences().get(0).getWords().get(0).getContent());
 
 	}
+
+
 
 }

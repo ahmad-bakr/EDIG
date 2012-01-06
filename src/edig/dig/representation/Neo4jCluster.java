@@ -9,6 +9,12 @@ public class Neo4jCluster {
 		this.documentIDs = new ArrayList<String>();
 	}
 	
+	public ArrayList<Neo4jDocument> getDocumentsList(){
+		ArrayList<Neo4jDocument> list = new ArrayList<Neo4jDocument>();
+		
+		return list;
+	}
+	
 	/**
 	 * Add document to cluster
 	 * @param docID document id
@@ -27,7 +33,7 @@ public class Neo4jCluster {
 	}
 	
 	/**
-	 * get list of documnets of the cluster
+	 * get list of document of the cluster
 	 * @return list of documents
 	 */
 	public ArrayList<String> getDocumentIDs() {
