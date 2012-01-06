@@ -245,21 +245,21 @@ public class Neo4jHandler {
 	/**
 	 * Load document from Neo4j
 	 * @param doc document
-	 * @return list of nodes
+	 * @return Neo4j document
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public ArrayList<Neo4jNode> loadDocument(Document doc) throws IOException, ClassNotFoundException {
-		ArrayList<Neo4jNode> nodes = new ArrayList<Neo4jNode>();
+	public Neo4jDocument loadDocument(Document doc) throws IOException, ClassNotFoundException {
+		Neo4jDocument document = new Neo4jDocument(doc.getId());
 		String firstWord = doc.getSentences().get(0).getWords().get(0).getContent();
 		Node firstNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, firstWord);
 		Traverser nodesChain = firstNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, DynamicRelationshipType.withName("document_"+doc.getId()), Direction.OUTGOING);
 		for ( Node node : nodesChain )
 		{
-			nodes.add(convertToNeo4jNode(node));
+			document.addNode(convertToNeo4jNode(node));
 		}
 
-		return nodes;
+		return document;
 	}
 
 	/**
@@ -328,8 +328,8 @@ public class Neo4jHandler {
 		Document doc = DocumentManager.createDocument("doc1" ,title, body);
 //		Document doc2 = DocumentManager.createDocument("doc2" ,title, body);		
 		Neo4jHandler handler = Neo4jHandler.getInstance("/media/disk/master/Master/EDIG_DB");
-		ArrayList<Neo4jNode> list = handler.loadDocument(doc);
-		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+		Neo4jDocument document = handler.loadDocument(doc);
+		for (Iterator iterator = document.getNodesList().iterator(); iterator.hasNext();) {
 			Neo4jNode neo4jNode = (Neo4jNode) iterator.next();
 			System.out.println(neo4jNode.getWord());
 			

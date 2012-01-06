@@ -4,14 +4,14 @@ import java.util.ArrayList;
 
 
 public class Neo4jDocument {
-	private int documentID;
+	private String documentID;
 	private ArrayList<Neo4jNode> nodesList;
 	
 	/**
 	 * Neo4j Document Constructor
 	 * @param id document id
 	 */
-	public Neo4jDocument(int id){
+	public Neo4jDocument(String id){
 		this.documentID = id;
 		this.nodesList = new ArrayList<Neo4jNode>();
 	}
@@ -27,7 +27,7 @@ public class Neo4jDocument {
 	 * Get document id
 	 * @return document id
 	 */
-	public int getDocumentID() {
+	public String getDocumentID() {
 		return documentID;
 	}
 	
@@ -35,7 +35,15 @@ public class Neo4jDocument {
 	 * Set document id
 	 * @param documentID document id
 	 */
-	public void setDocumentID(int documentID) {
+	public void setDocumentID(String documentID) {
 		this.documentID = documentID;
+	}
+	
+	/**
+	 * Add node to the document list
+	 * @param node node
+	 */
+	public void addNode(Neo4jNode node){
+		this.nodesList.add(node);
 	}
 }
