@@ -40,6 +40,14 @@ public class Neo4jHandler {
 	 */
 	private Neo4jHandler() {
 	};
+	
+	/**
+	 * Get graph database service 
+	 * @return graph database service
+	 */
+	public static GraphDatabaseService getGraphDb() {
+		return graphDb;
+	}
 
 	/**
 	 * Get instance of the graph database
@@ -334,6 +342,8 @@ public class Neo4jHandler {
 			System.out.println(neo4jNode.getWord());
 			
 		}
+		
+		handler.registerShutdownHook(handler.graphDb);
 //		handler.InsertAndIndexDocument(doc);
 //		handler.InsertAndIndexDocument(doc2);
 

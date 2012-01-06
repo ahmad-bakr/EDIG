@@ -9,9 +9,10 @@ import edig.entites.Document;
 
 public class Neo4jCluster {
 	ArrayList<String> documentIDs;
+	String id;
 	
-	
-	public Neo4jCluster() {
+	public Neo4jCluster(String id) {
+		this.id = id;
 		this.documentIDs = new ArrayList<String>();
 	}
 	
@@ -55,5 +56,14 @@ public class Neo4jCluster {
 	 */
 	public ArrayList<String> getDocumentIDs() {
 		return documentIDs;
+	}
+	
+	
+	public static void main(String[] args) {
+		Neo4jHandler handler = Neo4jHandler.getInstance("/media/disk/master/Master/EDIG_DB");
+		Neo4jCluster cluster = new Neo4jCluster("1");
+		cluster.addDcoument("doc1");
+		handler.registerShutdownHook(handler.getGraphDb());
+
 	}
 }
