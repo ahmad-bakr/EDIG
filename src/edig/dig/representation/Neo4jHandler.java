@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicRelationshipType;
@@ -16,7 +17,11 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Traverser;
+import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
@@ -237,8 +242,22 @@ public class Neo4jHandler {
 		}
 	}
 
-	public ArrayList<Neo4jNode> loadDocument(Neo4jNode firstNode) {
+	/**
+	 * Load document from Neo4j
+	 * @param doc document
+	 * @return list of nodes
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public ArrayList<Neo4jNode> loadDocument(Document doc) throws IOException, ClassNotFoundException {
 		ArrayList<Neo4jNode> nodes = new ArrayList<Neo4jNode>();
+		String firstWord = doc.getSentences().get(0).getWords().get(0).getContent();
+		Node firstNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, firstWord);
+		Traverser nodesChain = firstNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, DynamicRelationshipType.withName("document_"+doc.getId()), Direction.OUTGOING);
+		for ( Node node : nodesChain )
+		{
+			nodes.add(convertToNeo4jNode(node));
+		}
 
 		return nodes;
 	}
@@ -306,23 +325,29 @@ public class Neo4jHandler {
 		// TODO Auto-generated method stub
 		String title = "Hello, This is title. Ahmad Bakr";
 		String body ="Hello, This is body. How is going?";
-//		Document doc = DocumentManager.createDocument("doc1" ,title, body);
+		Document doc = DocumentManager.createDocument("doc1" ,title, body);
 //		Document doc2 = DocumentManager.createDocument("doc2" ,title, body);		
 		Neo4jHandler handler = Neo4jHandler.getInstance("/media/disk/master/Master/EDIG_DB");
+		ArrayList<Neo4jNode> list = handler.loadDocument(doc);
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+			Neo4jNode neo4jNode = (Neo4jNode) iterator.next();
+			System.out.println(neo4jNode.getWord());
+			
+		}
 //		handler.InsertAndIndexDocument(doc);
 //		handler.InsertAndIndexDocument(doc2);
 
 		
-		Node node = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "Hello");
-		Node node2 = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "This");
-		for ( Relationship rel : node.getRelationships(Direction.OUTGOING) )
-		{
-			System.out.println(rel.getType().toString());
-		}
-		System.out.println(handler.doesRelationsExist(node, node2, "document_doc1"));
- 		Neo4jNode convertedNode = handler.convertToNeo4jNode(node);
-		System.out.println(convertedNode.getDocumentTable().get("doc1").toString());
-		System.out.println(convertedNode.getDocumentTable().get("doc2").toString());
+//		Node node = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "Hello");
+//		Node node2 = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "This");
+//		for ( Relationship rel : node.getRelationships(Direction.OUTGOING) )
+//		{
+//			System.out.println(rel.getType().toString());
+//		}
+//		System.out.println(handler.doesRelationsExist(node, node2, "document_doc1"));
+// 		Neo4jNode convertedNode = handler.convertToNeo4jNode(node);
+//		System.out.println(convertedNode.getDocumentTable().get("doc1").toString());
+//		System.out.println(convertedNode.getDocumentTable().get("doc2").toString());
 
 	}
 
