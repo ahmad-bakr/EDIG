@@ -30,10 +30,10 @@ public class Neo4jDocument {
 	/**
 	 * Add cluster to the document
 	 * @param clusterID cluster id
-	 * @param similairty document similairty to the cluster
+	 * @param similairty document similarity to the cluster
 	 */
-	public void addCluster(String clusterID, float similairty){
-		this.clustersHash.put(clusterID, similairty);
+	public void addCluster(String clusterID, float similarity){
+		this.clustersHash.put(clusterID, similarity);
 	}
 	
 	/**
