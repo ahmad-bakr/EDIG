@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -20,6 +21,7 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import edig.entites.Document;
+import edig.entites.DocumentManager;
 import edig.entites.Sentence;
 import edig.entites.Word;
 
@@ -121,7 +123,8 @@ public class Neo4jHandler {
 		Relationship relationship = source.createRelationshipTo(Destination, type);
 		return relationship;
 	}
-
+	
+	
 	/**
 	 * Convert from node to Neo4j node
 	 * 
@@ -142,6 +145,22 @@ public class Neo4jHandler {
 				.setClusterImportanceHash((Hashtable<String, Double>) deserializeObject((byte[]) node
 						.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)));
 		return neo4jNode;
+	}
+	
+	/**
+	 * Return true if there is a relation between the source and destinatio
+	 * @param source source node
+	 * @param destination destination node
+	 * @param type relationship type
+	 * @return true if exists
+	 */
+	public boolean doesRelationsExist(Node source, Node destination, String type){
+		boolean exists = false;
+		for ( Relationship rel : source.getRelationships(Direction.OUTGOING) )
+		{
+			if(((int) rel.getEndNode().getId() == (int)destination.getId() ) && rel.getType().toString().equalsIgnoreCase(type)) return true;
+		}
+		return exists;
 	}
 
 	/**
@@ -203,7 +222,7 @@ public class Neo4jHandler {
 						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY,
 								word.getContent());
 					} // end if
-					if (currentNode != null && previousNode != null) {
+					if (currentNode != null && previousNode != null && !doesRelationsExist(previousNode, currentNode, "document_" + doc.getId() ) ) {
 						createRelationship(previousNode, currentNode,
 								"document_" + doc.getId());
 					}
@@ -281,13 +300,18 @@ public class Neo4jHandler {
 
 	/**
 	 * @param args
-	 * @throws IOException
-	 * @throws ClassNotFoundException
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws IOException,
-			ClassNotFoundException {
+	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
+		String title = "Hello, This is title. Ahmad Bakr";
+		String body ="Hello, This is body. How is going?";
+		Document doc = DocumentManager.createDocument("doc1" ,title, body);
+		Document doc2 = DocumentManager.createDocument("doc2" ,title, body);		
 		Neo4jHandler handler = Neo4jHandler.getInstance();
+//		handler.InsertAndIndexDocument(doc);
+//		handler.InsertAndIndexDocument(doc2);
+//		System.out.println("Done");
 //		Transaction tx = handler.getTransaction();
 //		try {
 //			Neo4jNode node1 = new Neo4jNode("node1_test");
@@ -300,9 +324,17 @@ public class Neo4jHandler {
 //		} finally {
 //			tx.finish();
 //		}
-		Node node = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "node1_test");
-		Neo4jNode convertedNode = handler.convertToNeo4jNode(node);
-		System.out.println(convertedNode.getDocumentTable().get("document1").get(0));
+		Node node = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "Hello");
+		Node node2 = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "This");
+		for ( Relationship rel : node.getRelationships(Direction.OUTGOING) )
+		{
+		//	System.out.println(rel.getType().toString());
+		}
+		System.out.println(handler.doesRelationsExist(node, node2, "document_doc1"));
+ 		Neo4jNode convertedNode = handler.convertToNeo4jNode(node);
+	//	System.out.println(convertedNode.getDocumentTable().get("doc1").toString());
+	//	System.out.println(convertedNode.getDocumentTable().get("doc2").toString());
+
 	}
 
 }
