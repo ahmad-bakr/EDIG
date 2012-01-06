@@ -1,17 +1,34 @@
 package edig.dig.representation;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+
+import edig.datasets.DatasetLoader;
+import edig.entites.Document;
 
 public class Neo4jCluster {
 	ArrayList<String> documentIDs;
+	
 	
 	public Neo4jCluster() {
 		this.documentIDs = new ArrayList<String>();
 	}
 	
-	public ArrayList<Neo4jDocument> getDocumentsList(){
+	/**
+	 * Get document List
+	 * @return list of documents
+	 * @throws ClassNotFoundException 
+	 * @throws IOException 
+	 */
+	public ArrayList<Neo4jDocument> getDocumentsList(DatasetLoader datasetHandler, Neo4jHandler neo4jHandler) throws IOException, ClassNotFoundException{
 		ArrayList<Neo4jDocument> list = new ArrayList<Neo4jDocument>();
-		
+		for (Iterator iterator = this.documentIDs.iterator(); iterator.hasNext();) {
+			String documentID = (String) iterator.next();
+			Document doc = datasetHandler.getDocument(documentID);
+			Neo4jDocument neo4jDoc = neo4jHandler.loadDocument(doc);
+			list.add(neo4jDoc);
+		}
 		return list;
 	}
 	
