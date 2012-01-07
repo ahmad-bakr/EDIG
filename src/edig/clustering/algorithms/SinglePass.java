@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.neo4j.graphdb.Node;
 
 import edig.datasets.DatasetLoader;
+import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
 import edig.dig.representation.Neo4jHandler;
@@ -25,30 +26,39 @@ public class SinglePass {
 		DDSimIF similarityCalculator = new DDSimilairty();
 		Enumeration e = docsHash.keys();
 		int numberOfClusters = 0;
+		//loop for documents in the dataset
 		while (e.hasMoreElements()) {
 			String documentID = (String) e.nextElement();
+			System.out.println("Processing document "+ documentID );
 			Document document = docsHash.get(documentID);
 			Neo4jDocument neo4jDocument = neo4jHandler.loadDocument(document);
 			boolean clusteredYet = false;
+			// get similar documents to the document
 			ArrayList<Neo4jDocument> similarDocuments = getSimilarDocuments(neo4jDocument, neo4jHandler, datasetHandler);
+			// loop over the similar documents
 			for (Iterator iterator = similarDocuments.iterator(); iterator.hasNext();) {
+
 				Neo4jDocument neo4jSimilarDocument = (Neo4jDocument) iterator.next();
+				// continue if the current similar document has no clusters
 				if(neo4jSimilarDocument.getClustersHash().isEmpty()) continue;
 				// check if the distance to the document is greater than the threshold
 				if(similarityCalculator.calculateSimilarity(neo4jDocument, neo4jSimilarDocument, datasetHandler.numberOfDocuments()) > similairtyThreshold ){
-				  ArrayList<String> candidateDocumentClustersIDs = neo4jSimilarDocument.getClusterIDsList();
+					//get the clusters of the similar document
+				 ArrayList<String> candidateDocumentClustersIDs = neo4jSimilarDocument.getClusterIDsList();
+					// loop over the clusters of the similar document
 				 for (Iterator iterator2 = candidateDocumentClustersIDs.iterator(); iterator2.hasNext();) { //loop for candidate clusters
 					String candidateClusterID = (String) iterator2.next();
+					// get the cluster
 					Neo4jCluster candidateNeo4jCluster = clustersList.get(candidateClusterID);
+					// calculate the average similarity to the cluster
 					double averageSimilairtyToCluster = calculateAvgSimilairtyToCluster(neo4jDocument, candidateNeo4jCluster, datasetHandler, neo4jHandler);
+					// if the average similarity greater the the threshold then add the document to the cluster
 					if(averageSimilairtyToCluster > similairtyThreshold){
 						clusteredYet = true;
 						candidateNeo4jCluster.addDcoument(neo4jDocument.getDocumentID());
 						neo4jDocument.addCluster(candidateClusterID, averageSimilairtyToCluster);
 					}// end if adding document to the cluster
 				 }//end loop for candidate clusters
-				  
-				  
 				}//end if [checking if the distance to the candidate document is less than the threshold] 
 			}//end looping for similar documents
 			
@@ -56,7 +66,7 @@ public class SinglePass {
 				numberOfClusters++;
 				Neo4jCluster newCluster = new Neo4jCluster(String.valueOf(numberOfClusters));
 				newCluster.addDcoument(documentID);
-				neo4jDocument.addCluster(newCluster.getId(), 0);
+				neo4jDocument.addCluster(newCluster.getId(), 1);
 			}
 			
 		} // end loop for all documents in the data set
@@ -103,10 +113,12 @@ public class SinglePass {
 			Neo4jNode neo4jNode = (Neo4jNode) iterator.next();
 			Hashtable<String, ArrayList<String>> documentTable = neo4jNode.getDocumentTable();
 			Enumeration e = documentTable.keys();
+			System.out.println("Number of matching document per node = "+ documentTable.keySet().size());
 			while (e.hasMoreElements()) {
 				String simDocumentID = (String) e.nextElement();
 				if(!simDocumentID.equalsIgnoreCase(doc.getDocumentID()) && !similarDocumentHash.containsKey(simDocumentID)){
 					Document d = datasetHandler.getDocument(simDocumentID);
+					System.out.println("load document " + d.getId());
 					Neo4jDocument nd = neo4jHandler.loadDocument(d);
 					similarDocumentHash.put(simDocumentID, nd);
 					similarDocument.add(nd);
@@ -117,12 +129,11 @@ public class SinglePass {
 		return similarDocument;
 	}
 	
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
+	public static void main(String[] args) throws Exception {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
-		Node node = neo4jHandler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "bear");
-		Neo4jNode neo4jNode = neo4jHandler.convertToNeo4jNode(node);
-		System.out.println(neo4jNode.getWord());
-		System.out.println(neo4jNode.getDocumentTable().keySet().toString());
+		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		SinglePass singlePassAlgorithm = new SinglePass();
+		singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.5, 5);
 		neo4jHandler.registerShutdownHook();	
 	}
 
