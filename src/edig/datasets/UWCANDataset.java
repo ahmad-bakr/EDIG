@@ -20,7 +20,7 @@ public class UWCANDataset implements DatasetLoader {
 	
 	
 	@Override
-	public Hashtable<String, Document> loadDocument() throws Exception {
+	public Hashtable<String, Document> loadDocuments() throws Exception {
 		File dir = new File(this.datasetPath);
     String[] categories = dir.list();
     for (int i = 0; i < categories.length; i++) {
@@ -54,7 +54,7 @@ public class UWCANDataset implements DatasetLoader {
 
 	public static void main(String[] args) throws Exception {
 		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
-		Hashtable<String, Document> docsHash = dataset.loadDocument();
+		Hashtable<String, Document> docsHash = dataset.loadDocuments();
 		Enumeration e = docsHash.keys();
 		Document doc = docsHash.get(e.nextElement());
 		System.out.println(doc.getOrginalCluster()+ "  "+ doc.getId());

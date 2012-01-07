@@ -8,7 +8,7 @@ import edig.entites.Document;
 
 public interface DatasetLoader {
 	
-	public Hashtable<String, Document> loadDocument() throws Exception; 
+	public Hashtable<String, Document> loadDocuments() throws Exception; 
 	public Document getDocument(String documentID);
 	public int numberOfDocuments();
 
