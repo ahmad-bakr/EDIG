@@ -31,7 +31,6 @@ public class SinglePass {
 			Neo4jDocument neo4jDocument = neo4jHandler.loadDocument(document);
 			boolean clusteredYet = false;
 			ArrayList<Neo4jDocument> similarDocuments = getSimilarDocuments(neo4jDocument, neo4jHandler, datasetHandler);
-			
 			for (Iterator iterator = similarDocuments.iterator(); iterator.hasNext();) {
 				Neo4jDocument neo4jSimilarDocument = (Neo4jDocument) iterator.next();
 				if(neo4jSimilarDocument.getClustersHash().isEmpty()) continue;

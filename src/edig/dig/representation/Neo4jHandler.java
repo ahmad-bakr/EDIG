@@ -34,7 +34,7 @@ public class Neo4jHandler {
 	private static Neo4jHandler neo4jOperator = null;
 	private static GraphDatabaseService graphDb = null;
 	private static Index<Node> nodeIndex = null;
-
+	private static Hashtable<String, Neo4jDocument> documentsCache;
 	/**
 	 * Private Constructor (Singleton)
 	 */
@@ -56,6 +56,7 @@ public class Neo4jHandler {
 	 */
 	public static Neo4jHandler getInstance(String databasePath) {
 		if (neo4jOperator == null) {
+			documentsCache = new Hashtable<String, Neo4jDocument>();
 			neo4jOperator = new Neo4jHandler();
 			graphDb = new EmbeddedGraphDatabase(databasePath);
 			nodeIndex = graphDb.index().forNodes("nodes");
@@ -245,6 +246,7 @@ public class Neo4jHandler {
 	 * @throws ClassNotFoundException
 	 */
 	public Neo4jDocument loadDocument(Document doc) throws IOException, ClassNotFoundException {
+		if (documentsCache.containsKey(doc.getId())) return documentsCache.get(doc.getId());
 		Neo4jDocument document = new Neo4jDocument(doc.getId());
 		document.setNumberOfTitleWords(doc.getNumberOfTitleWords());
 		document.setNumberOfBodyWords(doc.getNumberOfBodyWords());
@@ -255,7 +257,7 @@ public class Neo4jHandler {
 		{
 			document.addNode(convertToNeo4jNode(node));
 		}
-
+		documentsCache.put(doc.getId(), document);
 		return document;
 	}
 
