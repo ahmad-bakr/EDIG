@@ -25,6 +25,8 @@ import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
+import edig.datasets.DatasetLoader;
+import edig.datasets.UWCANDataset;
 import edig.entites.Document;
 import edig.entites.DocumentManager;
 import edig.entites.Sentence;
@@ -322,19 +324,21 @@ public class Neo4jHandler {
 	 */
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String title = "Hello, This is title. Ahmad Bakr";
-		String body ="Hello, This is body. How is going?";
-		Document doc = DocumentManager.createDocument("doc1" ,title, body);
+//		String title = "Hello, This is title. Ahmad Bakr";
+//		String body ="Hello, This is body. How is going?";
+//		Document doc = DocumentManager.createDocument("doc1" ,title, body);
 //		Document doc2 = DocumentManager.createDocument("doc2" ,title, body);		
-		Neo4jHandler handler = Neo4jHandler.getInstance("/media/disk/master/Master/EDIG_DB");
-		Neo4jDocument document = handler.loadDocument(doc);
-		for (Iterator iterator = document.getNodesList().iterator(); iterator.hasNext();) {
-			Neo4jNode neo4jNode = (Neo4jNode) iterator.next();
-			System.out.println(neo4jNode.getWord());
-			
-		}
 		
-		handler.registerShutdownHook();
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
+		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		Hashtable<String, Document> docsHash = datasetHandler.loadDocuments();
+		Document testDocument = docsHash.get("4EnUp.htm");
+		Neo4jDocument neo4jDoc = neo4jHandler.loadDocument(testDocument);
+		neo4jDoc.addCluster("1", 0.9);
+		Neo4jDocument neo4jDoc2 = neo4jHandler.loadDocument(testDocument);
+		System.out.println(neo4jDoc2.getClusterIDsList().toString());
+		
+		neo4jHandler.registerShutdownHook();
 //		handler.insertAndIndexDocument(doc);
 //		handler.insertAndIndexDocument(doc2);
 
