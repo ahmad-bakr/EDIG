@@ -316,7 +316,7 @@ public class Neo4jHandler {
 	 * @param graphDb
 	 *          graph database instance
 	 */
-	public void registerShutdownHook(final GraphDatabaseService graphDb) {
+	public void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -343,7 +343,7 @@ public class Neo4jHandler {
 			
 		}
 		
-		handler.registerShutdownHook(handler.graphDb);
+		handler.registerShutdownHook();
 //		handler.InsertAndIndexDocument(doc);
 //		handler.InsertAndIndexDocument(doc2);
 

@@ -63,7 +63,7 @@ public class Neo4jCluster {
 		Neo4jHandler handler = Neo4jHandler.getInstance("/media/disk/master/Master/EDIG_DB");
 		Neo4jCluster cluster = new Neo4jCluster("1");
 		cluster.addDcoument("doc1");
-		handler.registerShutdownHook(handler.getGraphDb());
+		handler.registerShutdownHook();
 
 	}
 }
