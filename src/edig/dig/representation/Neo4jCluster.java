@@ -2,7 +2,10 @@ package edig.dig.representation;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
+
+import scala.collection.mutable.HashTable;
 
 import edig.datasets.DatasetLoader;
 import edig.entites.Document;
@@ -16,6 +19,49 @@ public class Neo4jCluster {
 		this.documentIDs = new ArrayList<String>();
 	}
 	
+	/**
+	 * Get the cluster representative
+	 * @param datasetHandler dataset handler
+	 * @param neo4jHandler neo4j Hander
+	 * @return hash of word-weight for cluster representative
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public Hashtable<String, Double> getRepresentative(DatasetLoader datasetHandler, Neo4jHandler neo4jHandler ) throws IOException, ClassNotFoundException{
+		Hashtable<String, Double> representative = new Hashtable<String,Double>();
+		ArrayList<Neo4jDocument> documents = getDocumentsList(datasetHandler, neo4jHandler);
+		for (Iterator iterator = documents.iterator(); iterator.hasNext();) {
+			Neo4jDocument neo4jDocument = (Neo4jDocument) iterator.next();
+			ArrayList<Neo4jNode> nodesList = neo4jDocument.getNodesList();
+			for (Iterator iterator2 = nodesList.iterator(); iterator2.hasNext();) {
+				Neo4jNode neo4jNode = (Neo4jNode) iterator2.next();
+				ArrayList<String> documentEntityInTable = neo4jNode.getDocumentEntity(neo4jDocument.getDocumentID());
+				double termFrequency = Double.parseDouble(documentEntityInTable.get(0));
+				double wordWeight =0;
+				if(isTitleWord(documentEntityInTable.get(1))){
+					 wordWeight = 0.2 * (termFrequency/neo4jDocument.getNumberOfTitleWords());
+				}else{
+					 wordWeight = (termFrequency/neo4jDocument.getNumberOfBodyWords());
+				}// end if
+				
+				if(representative.containsKey(neo4jNode.getWord())){
+					representative.put(neo4jNode.getWord(), representative.get(neo4jNode.getWord()) + wordWeight );
+				}else{
+					representative.put(neo4jNode.getWord(), wordWeight);
+				}
+				
+			}//end loop for nodes of the document
+		}// end loop for documents
+		return representative;
+	}
+	
+	
+	private boolean isTitleWord(String firstOccur){
+		String first = firstOccur.split("_")[0];
+		if(first.equalsIgnoreCase("0")) return true;
+		return false;
+	}
+
 	/**
 	 * Get document List
 	 * @return list of documents
