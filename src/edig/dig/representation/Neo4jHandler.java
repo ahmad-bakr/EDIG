@@ -184,7 +184,7 @@ public class Neo4jHandler {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public void InsertAndIndexDocument(Document doc) throws IOException,
+	public void insertAndIndexDocument(Document doc) throws IOException,
 			ClassNotFoundException {
 		Node currentNode = null;
 		Node previousNode = null;
@@ -197,47 +197,34 @@ public class Neo4jHandler {
 				wordNumber = 0;
 				ArrayList<Word> words = sentence.getWords();
 				for (Word word : words) { // iterate over words of sentence
-					currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY,
-							word.getContent());
+					currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, word.getContent());
 					if (currentNode == null) { // word not found in the index (new word)
 						Neo4jNode newNode = new Neo4jNode(word.getContent());
 						ArrayList<String> documentEntity = new ArrayList<String>();
 						documentEntity.add("1");
-						documentEntity.add(String.valueOf(sentenceNumber) + "_"
-								+ String.valueOf(wordNumber));
+						documentEntity.add(String.valueOf(sentenceNumber) + "_" + String.valueOf(wordNumber));
 						newNode.addToDocumentTable(doc.getId(), documentEntity);
 						insertAndIndexNode(newNode);
-						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY,
-								word.getContent());
+						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY,word.getContent());
 					} else { // word exists
 						Neo4jNode existingNode = convertToNeo4jNode(currentNode);
-						if (existingNode.isInDocumentTable(doc.getId())) { // if the word
-																																// was seen
-																																// before in the
-																																// current
-																																// document
-							ArrayList<String> documentEntity = existingNode
-									.getDocumentEntity(doc.getId());
+						if (existingNode.isInDocumentTable(doc.getId())) { // if the word was seen before in the current document
+							ArrayList<String> documentEntity = existingNode.getDocumentEntity(doc.getId());
 							int tf = Integer.parseInt(documentEntity.get(0)) + 1;
 							documentEntity.set(0, String.valueOf(tf));
-							documentEntity.add(String.valueOf(sentenceNumber) + "_"
-									+ String.valueOf(wordNumber));
+							documentEntity.add(String.valueOf(sentenceNumber) + "_" + String.valueOf(wordNumber));
 							existingNode.addToDocumentTable(doc.getId(), documentEntity);
-						} else { // if it's the first time to see the current word in the
-											// current document
+						} else { // if it's the first time to see the current word in the current document
 							ArrayList<String> documentEntity = new ArrayList<String>();
 							documentEntity.add("1");
-							documentEntity.add(String.valueOf(sentenceNumber) + "_"
-									+ String.valueOf(wordNumber));
+							documentEntity.add(String.valueOf(sentenceNumber) + "_"	+ String.valueOf(wordNumber));
 							existingNode.addToDocumentTable(doc.getId(), documentEntity);
 						}// end if
 						modifyAndIndexNode(existingNode, currentNode);
-						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY,
-								word.getContent());
+						currentNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, 	word.getContent());
 					} // end if
 					if (currentNode != null && previousNode != null && !doesRelationsExist(previousNode, currentNode, "document_" + doc.getId() ) ) {
-						createRelationship(previousNode, currentNode,
-								"document_" + doc.getId());
+						createRelationship(previousNode, currentNode, "document_" + doc.getId());
 					}
 					previousNode = currentNode;
 					wordNumber++;
@@ -259,6 +246,8 @@ public class Neo4jHandler {
 	 */
 	public Neo4jDocument loadDocument(Document doc) throws IOException, ClassNotFoundException {
 		Neo4jDocument document = new Neo4jDocument(doc.getId());
+		document.setNumberOfTitleWords(doc.getNumberOfTitleWords());
+		document.setNumberOfBodyWords(doc.getNumberOfBodyWords());
 		String firstWord = doc.getSentences().get(0).getWords().get(0).getContent();
 		Node firstNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, firstWord);
 		Traverser nodesChain = firstNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, DynamicRelationshipType.withName("document_"+doc.getId()), Direction.OUTGOING);
@@ -344,8 +333,8 @@ public class Neo4jHandler {
 		}
 		
 		handler.registerShutdownHook();
-//		handler.InsertAndIndexDocument(doc);
-//		handler.InsertAndIndexDocument(doc2);
+//		handler.insertAndIndexDocument(doc);
+//		handler.insertAndIndexDocument(doc2);
 
 		
 //		Node node = handler.findNodeByProperty(Neo4jNode.WORD_PROPERTY, "Hello");

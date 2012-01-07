@@ -24,10 +24,15 @@ public class DocumentManager {
 		Sentence titleSentence = flatten(parser.parseText(title));
 		ArrayList<Sentence> bodySentences = parser.parseText(body);
 		Document doc = new Document(id);
+		int numberOfBodyWords=0;
+		doc.setNumberOfTitleWords(titleSentence.getWords().size());
 		doc.addSentence(titleSentence);
 		for (int i = 0; i < bodySentences.size(); i++) {
-			doc.addSentence(bodySentences.get(i));
+			Sentence s = bodySentences.get(i);
+			numberOfBodyWords+= s.getWords().size();
+			doc.addSentence(s);
 		}
+		doc.setNumberOfBodyWords(numberOfBodyWords);
 		return doc;
 	}
 	
@@ -44,6 +49,8 @@ public class DocumentManager {
 		String title = "Hello, This is title. Ahmad Bakr";
 		String body ="Hello, This is body. How is going?";
 		Document doc = DocumentManager.createDocument("doc1" ,title, body);
+		System.out.println(doc.getNumberOfTitleWords());
+		System.out.println(doc.getNumberOfBodyWords());
 		for (int i = 0; i < doc.getSentences().size(); i++) {
 			for (int j = 0; j < doc.getSentences().get(i).getWords().size(); j++) {
 				System.out.print(doc.getSentences().get(i).getWords().get(j).getContent() + " ");

@@ -9,6 +9,9 @@ public class Neo4jDocument {
 	private String documentID;
 	private ArrayList<Neo4jNode> nodesList;
 	private Hashtable<String,Float> clustersHash;
+	private int numberOfTitleWords ;
+	private int numberOfBodyWords ;
+	
 	/**
 	 * Neo4j Document Constructor
 	 * @param id document id
@@ -65,5 +68,37 @@ public class Neo4jDocument {
 	 */
 	public void addNode(Neo4jNode node){
 		this.nodesList.add(node);
+	}
+	
+	/**
+	 * Set number of body words
+	 * @param numberOfBodyWords
+	 */
+	public void setNumberOfBodyWords(int numberOfBodyWords) {
+		this.numberOfBodyWords = numberOfBodyWords;
+	}
+	
+	/**
+	 * Set number of title words
+	 * @param numberOfTitleWords
+	 */
+	public void setNumberOfTitleWords(int numberOfTitleWords) {
+		this.numberOfTitleWords = numberOfTitleWords;
+	}
+	
+	/**
+	 * Get number of body words
+	 * @return number of body words
+	 */
+	public int getNumberOfBodyWords() {
+		return numberOfBodyWords;
+	}
+	
+	/**
+	 * Get number of title words
+	 * @return number of title words
+	 */
+	public int getNumberOfTitleWords() {
+		return numberOfTitleWords;
 	}
 }

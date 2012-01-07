@@ -58,9 +58,9 @@ public class DDSimilairty implements DDSimIF{
 			double termFrequency = Double.parseDouble(documentEntityInTable.get(0));
 			double wordWeight =0;
 			if(isTitleWord(documentEntityInTable.get(1))){
-				 wordWeight = 0.2 * termFrequency * Math.log((documentTableSize*1.0)/this.numberOfDocuments);
+				 wordWeight = 0.2 * (termFrequency/document.getNumberOfTitleWords()) * Math.log((documentTableSize*1.0)/this.numberOfDocuments);
 			}else{
-				 wordWeight =  termFrequency * Math.log((documentTableSize*1.0)/this.numberOfDocuments);
+				 wordWeight = (termFrequency/document.getNumberOfBodyWords()) * Math.log((documentTableSize*1.0)/this.numberOfDocuments);
 			}
 			terms.put(neo4jNode.getWord(), wordWeight);
 		}
@@ -83,7 +83,7 @@ public class DDSimilairty implements DDSimIF{
 		Neo4jDocument document2 = handler.loadDocument(doc2);
 
 		DDSimilairty sim = new DDSimilairty();
-		System.out.println(sim.calculateSimilarity(document1, document2, 3));
+		System.out.println(sim.calculateSimilarity(document1, document2, 6));
 		
 		handler.registerShutdownHook();
 

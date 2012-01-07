@@ -11,12 +11,16 @@ public class Document {
 	private String orginalCluster;
 	private ArrayList<String> predictedClusters;
 	private ArrayList<Sentence> sentences;
+	private int numberOfTitleWords;
+	private int numberOfBodyWords;
 	
 	/**
 	 * Constructor
 	 */
 	public Document(String id) {
 		this.id = id;
+		this.numberOfBodyWords=0;
+		this.numberOfTitleWords=0;
 		this.predictedClusters = new ArrayList<String>();
 		this.sentences = new ArrayList<Sentence>();
 	}
@@ -83,6 +87,38 @@ public class Document {
 	 */
 	public ArrayList<String> getPredictedClusters() {
 		return predictedClusters;
+	}
+	
+	/**
+	 * Get number of body words
+	 * @return number of body words
+	 */
+	public int getNumberOfBodyWords() {
+		return numberOfBodyWords;
+	}
+	
+	/**
+	 * Get number of title words
+	 * @return number of title words
+	 */
+	public int getNumberOfTitleWords() {
+		return numberOfTitleWords;
+	}
+	
+	/**
+	 * set number of body words
+	 * @param numberOfBodyWords
+	 */
+	public void setNumberOfBodyWords(int numberOfBodyWords) {
+		this.numberOfBodyWords = numberOfBodyWords;
+	}
+	
+	/**
+	 * set number of title words
+	 * @param numberOfTitleWords
+	 */
+	public void setNumberOfTitleWords(int numberOfTitleWords) {
+		this.numberOfTitleWords = numberOfTitleWords;
 	}
 	
 	
