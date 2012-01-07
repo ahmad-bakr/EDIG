@@ -27,7 +27,7 @@ public class DDSimilairty implements DDSimIF{
 		while(e.hasMoreElements()){
       String word = (String) e.nextElement();
       if(document2Hash.containsKey(word)){
-      	dotProduct+= document1Hash.get(word)*document1Hash.get(word);
+      	dotProduct+= document1Hash.get(word)*document2Hash.get(word);
       }
 		}
 		if (document1Mag<0.001) document1Mag = 0.001;
