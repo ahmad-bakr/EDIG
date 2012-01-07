@@ -16,7 +16,7 @@ public class InsertUWCAN {
 		Enumeration e = docsHash.keys();
 		while (e.hasMoreElements()) {
 			Document doc = (Document) docsHash.get(e.nextElement());
-			System.out.println("Inserting document doc "+ doc.getId() +" from "+ doc.getOrginalCluster());
+			System.out.println("Inserting document "+ doc.getId() +" from "+ doc.getOrginalCluster());
 			neo4jHandler.insertAndIndexDocument(doc);
 		}
 		neo4jHandler.registerShutdownHook();
