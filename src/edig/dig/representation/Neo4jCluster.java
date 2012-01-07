@@ -19,6 +19,10 @@ public class Neo4jCluster {
 		this.documentIDs = new ArrayList<String>();
 	}
 	
+	public String getId() {
+		return id;
+	}
+	
 	/**
 	 * Get the cluster representative
 	 * @param datasetHandler dataset handler
@@ -63,7 +67,7 @@ public class Neo4jCluster {
 	}
 
 	/**
-	 * Get document List
+	 * Get document List from neo4j
 	 * @return list of documents
 	 * @throws ClassNotFoundException 
 	 * @throws IOException 

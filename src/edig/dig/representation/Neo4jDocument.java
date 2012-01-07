@@ -1,14 +1,16 @@
 package edig.dig.representation;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 
 
 public class Neo4jDocument {
 	private String documentID;
 	private ArrayList<Neo4jNode> nodesList;
-	private Hashtable<String,Float> clustersHash;
+	private Hashtable<String,Double> clustersHash;
 	private int numberOfTitleWords ;
 	private int numberOfBodyWords ;
 	
@@ -17,7 +19,7 @@ public class Neo4jDocument {
 	 * @param id document id
 	 */
 	public Neo4jDocument(String id){
-		this.clustersHash = new Hashtable<String, Float>();
+		this.clustersHash = new Hashtable<String, Double>();
 		this.documentID = id;
 		this.nodesList = new ArrayList<Neo4jNode>();
 	}
@@ -26,7 +28,7 @@ public class Neo4jDocument {
 	 * Get clusters where document belongs to
 	 * @return list of clusters
 	 */
-	public Hashtable<String, Float> getClustersList() {
+	public Hashtable<String, Double> getClustersHash() {
 		return this.clustersHash;
 	}
 	
@@ -35,7 +37,7 @@ public class Neo4jDocument {
 	 * @param clusterID cluster id
 	 * @param similairty document similarity to the cluster
 	 */
-	public void addCluster(String clusterID, float similarity){
+	public void addCluster(String clusterID, double similarity){
 		this.clustersHash.put(clusterID, similarity);
 	}
 	
@@ -101,4 +103,21 @@ public class Neo4jDocument {
 	public int getNumberOfTitleWords() {
 		return numberOfTitleWords;
 	}
+	
+	/**
+	 * Get list of cluster ids
+	 * @return list of clusters ids
+	 */
+	public ArrayList<String> getClusterIDsList(){
+		ArrayList<String> list = new ArrayList<String>();
+		Enumeration keys = this.clustersHash.keys();
+		while (keys.hasMoreElements()) {
+			String id = (String) keys.nextElement();
+			list.add(id);
+		}
+		
+		return list;
+	}
+
+	
 }
