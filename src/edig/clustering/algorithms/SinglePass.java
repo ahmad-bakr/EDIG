@@ -67,6 +67,7 @@ public class SinglePass {
 				Neo4jCluster newCluster = new Neo4jCluster(String.valueOf(numberOfClusters));
 				newCluster.addDcoument(documentID);
 				neo4jDocument.addCluster(newCluster.getId(), 1);
+				clustersList.put(newCluster.getId(), newCluster);
 			}
 			
 		} // end loop for all documents in the data set
@@ -113,12 +114,10 @@ public class SinglePass {
 			Neo4jNode neo4jNode = (Neo4jNode) iterator.next();
 			Hashtable<String, ArrayList<String>> documentTable = neo4jNode.getDocumentTable();
 			Enumeration e = documentTable.keys();
-			System.out.println("Number of matching document per node = "+ documentTable.keySet().size());
 			while (e.hasMoreElements()) {
 				String simDocumentID = (String) e.nextElement();
 				if(!simDocumentID.equalsIgnoreCase(doc.getDocumentID()) && !similarDocumentHash.containsKey(simDocumentID)){
 					Document d = datasetHandler.getDocument(simDocumentID);
-					System.out.println("load document " + d.getId());
 					Neo4jDocument nd = neo4jHandler.loadDocument(d);
 					similarDocumentHash.put(simDocumentID, nd);
 					similarDocument.add(nd);
@@ -133,7 +132,9 @@ public class SinglePass {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
 		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 		SinglePass singlePassAlgorithm = new SinglePass();
-		singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.5, 5);
+		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.5, 5);
+		System.out.println(datasetHandler.numberOfDocuments());
+		System.out.println(clusters.size());
 		neo4jHandler.registerShutdownHook();	
 	}
 
