@@ -29,7 +29,7 @@ public class ModifiedSinglePass {
 		//loop for documents in the dataset
 		while (e.hasMoreElements()) {
 			String documentID = (String) e.nextElement();
-			System.out.println("Processing document "+ documentID );
+			//System.out.println("Processing document "+ documentID );
 			Document document = docsHash.get(documentID);
 			Neo4jDocument neo4jDocument = neo4jHandler.loadDocument(document);
 			boolean clusteredYet = false;
@@ -42,7 +42,9 @@ public class ModifiedSinglePass {
 				// continue if the current similar document has no clusters
 				if(neo4jSimilarDocument.getClustersHash().isEmpty()) continue;
 				// check if the distance to the document is greater than the threshold
-				if(similarityCalculator.calculateSimilarity(neo4jDocument, neo4jSimilarDocument, datasetHandler.numberOfDocuments()) > similairtyThreshold ){
+				double sim = similarityCalculator.calculateSimilarity(neo4jDocument, neo4jSimilarDocument, datasetHandler.numberOfDocuments());
+				System.out.println(sim);
+				if(sim > similairtyThreshold ){
 					//get the clusters of the similar document
 				 ArrayList<String> candidateDocumentClustersIDs = neo4jSimilarDocument.getClusterIDsList();
 					// loop over the clusters of the similar document
@@ -89,6 +91,7 @@ public class ModifiedSinglePass {
 		double similarity =0 ;
 		DCSimIF similairtyCalculator = new DCSimilairty();
 		similarity = similairtyCalculator.calculateSimilairty(document, cluster, datasetHandler.numberOfDocuments(), neo4jHandler, datasetHandler);
+		//System.out.println(similarity);
 		return similarity;
 	}
 	
@@ -124,14 +127,18 @@ public class ModifiedSinglePass {
 		return similarDocument;
 	}
 	
+	
 	public static void main(String[] args) throws Exception {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
 		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 		ModifiedSinglePass singlePassAlgorithm = new ModifiedSinglePass();
-		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.1, 5);
+		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 1, 5);
 		System.out.println(datasetHandler.numberOfDocuments());
 		System.out.println(clusters.size());
 		neo4jHandler.registerShutdownHook();	
 	}
+
+	
+	
 
 }

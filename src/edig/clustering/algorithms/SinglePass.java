@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-
-import org.neo4j.graphdb.Node;
-
 import edig.datasets.DatasetLoader;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
@@ -29,7 +26,7 @@ public class SinglePass {
 		//loop for documents in the dataset
 		while (e.hasMoreElements()) {
 			String documentID = (String) e.nextElement();
-			System.out.println("Processing document "+ documentID );
+	//		System.out.println("Processing document "+ documentID );
 			Document document = docsHash.get(documentID);
 			Neo4jDocument neo4jDocument = neo4jHandler.loadDocument(document);
 			boolean clusteredYet = false;
@@ -93,6 +90,7 @@ public class SinglePass {
 			Neo4jDocument neo4jDocument = (Neo4jDocument) iterator.next();
 			similairty += similairtyCalculator.calculateSimilarity(document, neo4jDocument, datasetHandler.numberOfDocuments());
 		}
+		System.out.println(similairty/clusterDocuments.size());
 		return similairty/clusterDocuments.size();
 	}
 	

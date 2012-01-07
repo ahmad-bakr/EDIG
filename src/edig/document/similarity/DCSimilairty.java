@@ -57,9 +57,9 @@ public class DCSimilairty implements DCSimIF{
 			double termFrequency = Double.parseDouble(documentEntityInTable.get(0));
 			double wordWeight =0;
 			if(isTitleWord(documentEntityInTable.get(1))){
-				 wordWeight = 0.2 * (termFrequency/document.getNumberOfTitleWords()) * Math.log((documentTableSize*1.0)/this.numberOfDocuments);
+				 wordWeight = 0.2 * (termFrequency/document.getNumberOfTitleWords()) ;
 			}else{
-				 wordWeight = (termFrequency/document.getNumberOfBodyWords()) * Math.log((documentTableSize*1.0)/this.numberOfDocuments);
+				 wordWeight = (termFrequency/document.getNumberOfBodyWords()) ;
 			}
 			terms.put(neo4jNode.getWord(), wordWeight);
 		}
