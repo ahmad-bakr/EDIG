@@ -17,12 +17,16 @@ public class FMeasure {
 	private Hashtable<String, ArrayList<Integer>> confusionMatrix;
 
 	public FMeasure() {
+		this.precision = 0;
+		this.recall = 0;
+		this.fmeasure = 0;
 		this.confusionMatrix = new Hashtable<String, ArrayList<Integer>>();
 	}
 	
 	
 	public void calculate(Hashtable<String, Neo4jCluster> clusters , DatasetLoader datasetHandler, Neo4jHandler neo4jHandler) throws Exception{
-		initializeConfusionMartix(datasetHandler.getOriginalClasses(), clusters.keySet().size());
+		ArrayList<String> classes = datasetHandler.getOriginalClasses();
+		initializeConfusionMartix(classes, clusters.keySet().size());
 		Enumeration e = clusters.keys();
 		while (e.hasMoreElements()) {
 			String clusterID = (String) e.nextElement();
@@ -30,10 +34,30 @@ public class FMeasure {
 			processCluster(cluster, datasetHandler, neo4jHandler);
 		}
 		
-		while (e.hasMoreElements()) {
-			String clusterID = (String) e.nextElement();
-			
+		for (int i = 0; i < classes.size(); i++) {
+			String className = classes.get(i);
+			double values [] = calculateFMeasureForClass(className, datasetHandler, neo4jHandler, clusters);
+			this.fmeasure += values[2] * datasetHandler.getNumberOfDocumentsInClass(className);
+			this.recall += values[1] * datasetHandler.getNumberOfDocumentsInClass(className) ;
+			this.precision += values[0] * datasetHandler.getNumberOfDocumentsInClass(className);
 		}
+		
+		this.fmeasure = (this.fmeasure*1.0)/datasetHandler.numberOfDocuments();
+		this.precision = (this.precision*1.0)/datasetHandler.numberOfDocuments();
+		this.recall = (this.recall*1.0)/datasetHandler.numberOfDocuments();
+		
+	}
+	
+	public double getFmeasure() {
+		return fmeasure;
+	}
+	
+	public double getPrecision() {
+		return precision;
+	}
+	
+	public double getRecall() {
+		return recall;
 	}
 	
 	private double[] calculateFMeasureForClass(String className, DatasetLoader datasetHandler, Neo4jHandler neo4jHandler, Hashtable<String, Neo4jCluster> clusters){
