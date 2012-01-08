@@ -1,6 +1,7 @@
 package edig.datasets;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import org.jsoup.Jsoup;
@@ -11,13 +12,28 @@ public class UWCANDataset implements DatasetLoader {
 	private Hashtable<String, Document> documentHash;
 	private String datasetPath;
 	private int numberOfDocument;
+	private ArrayList<String> originalClasses ;
+	private Hashtable<String, Integer> classDocumentCount;
 	
 	public UWCANDataset(String path) {
+		this.originalClasses = new ArrayList<String>();
 		this.datasetPath = path;
 		this.documentHash = new Hashtable<String, Document>();
 		this.numberOfDocument =0;
+		this.classDocumentCount = new Hashtable<String, Integer>();
 	}
-	
+
+	@Override
+	public ArrayList<String> getOriginalClasses() {
+		return this.originalClasses;
+	}
+
+	@Override
+	public int getNumberOfDocumentsInClass(String className) {
+		// TODO Auto-generated method stub
+		return this.classDocumentCount.get(className);
+	}
+
 	
 	@Override
 	public Hashtable<String, Document> loadDocuments() throws Exception {
@@ -25,7 +41,9 @@ public class UWCANDataset implements DatasetLoader {
     String[] categories = dir.list();
     for (int i = 0; i < categories.length; i++) {
     	String categoryName = categories[i];
+    	this.originalClasses.add(categoryName);
   		String[] docsInCategory = new File(this.datasetPath+"/"+categoryName).list();
+  		this.classDocumentCount.put(categoryName, docsInCategory.length);
     	for (int j = 0; j < docsInCategory.length; j++) {
     		this.numberOfDocument++;
     		String documentName = docsInCategory[j];
@@ -68,6 +86,9 @@ public class UWCANDataset implements DatasetLoader {
 
 
 	}
+
+
+
 
 
 

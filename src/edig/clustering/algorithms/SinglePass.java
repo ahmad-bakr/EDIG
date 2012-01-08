@@ -160,7 +160,13 @@ public class SinglePass {
 		Enumeration e = clusters.keys();
 		while (e.hasMoreElements()) {
 			String clusterID = (String) e.nextElement();
-			System.out.println("Cluster = " + clusterID + " has number of documents = " + clusters.get(clusterID).getDocumentIDs().size());			
+			System.out.println("Cluster = " + clusterID + " has number of documents = " + clusters.get(clusterID).getDocumentIDs().size());	
+			ArrayList<Neo4jDocument> documents = clusters.get(clusterID).getDocumentsList(datasetHandler, neo4jHandler); 
+			for (int i = 0; i < documents.size(); i++) {
+				System.out.println(datasetHandler.getDocument(documents.get(i).getDocumentID()).getOrginalCluster());
+			}
+			System.out.println(("*********************************************************************************"));
+			
 		}
 		neo4jHandler.registerShutdownHook();	
 	}
