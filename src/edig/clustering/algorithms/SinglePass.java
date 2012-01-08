@@ -14,6 +14,7 @@ import edig.dig.representation.Neo4jNode;
 import edig.document.similarity.DDSimIF;
 import edig.document.similarity.DDSimilairty;
 import edig.entites.Document;
+import edig.evaluations.FMeasure;
 
 public class SinglePass {
 	
@@ -155,19 +156,28 @@ public class SinglePass {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
 		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 		SinglePass singlePassAlgorithm = new SinglePass();
-		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.01, 5);
-		System.out.println("Number of documents = "+ datasetHandler.numberOfDocuments());
-		Enumeration e = clusters.keys();
-		while (e.hasMoreElements()) {
-			String clusterID = (String) e.nextElement();
-			System.out.println("Cluster = " + clusterID + " has number of documents = " + clusters.get(clusterID).getDocumentIDs().size());	
-			ArrayList<Neo4jDocument> documents = clusters.get(clusterID).getDocumentsList(datasetHandler, neo4jHandler); 
-			for (int i = 0; i < documents.size(); i++) {
-				System.out.println(datasetHandler.getDocument(documents.get(i).getDocumentID()).getOrginalCluster());
-			}
-			System.out.println(("*********************************************************************************"));
-			
-		}
+		double threshold = 0.03;
+		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, threshold, 5);
+		FMeasure fmeasureCalculate = new FMeasure();
+		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
+		System.out.println("*********************");
+		System.out.println("******* For Threshold = " + threshold);
+		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());
+		System.out.println("Precision = "+ fmeasureCalculate.getPrecision());
+		System.out.println("Recall = "+ fmeasureCalculate.getRecall());
+		System.out.println("*********************");
+		
+//		System.out.println("Number of documents = "+ datasetHandler.numberOfDocuments());
+//		Enumeration e = clusters.keys();
+//		while (e.hasMoreElements()) {
+//			String clusterID = (String) e.nextElement();
+//			System.out.println("Cluster = " + clusterID + " has number of documents = " + clusters.get(clusterID).getDocumentIDs().size());	
+//			ArrayList<Neo4jDocument> documents = clusters.get(clusterID).getDocumentsList(datasetHandler, neo4jHandler); 
+//			for (int i = 0; i < documents.size(); i++) {
+//				System.out.println(datasetHandler.getDocument(documents.get(i).getDocumentID()).getOrginalCluster());
+//			}
+//			System.out.println(("*********************************************************************************"));
+//		}
 		neo4jHandler.registerShutdownHook();	
 	}
 

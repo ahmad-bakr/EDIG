@@ -100,7 +100,7 @@ public class FMeasure {
 		for (int i = 0; i < originalClasses.size(); i++) {
 			ArrayList<Integer> list = new ArrayList<Integer>(numberOfClusters);
 			for (int j = 0; j < numberOfClusters; j++) {
-				list.set(j, 0);
+				list.add(0);
 			}
 			confusionMatrix.put(originalClasses.get(i),list);
 		}
