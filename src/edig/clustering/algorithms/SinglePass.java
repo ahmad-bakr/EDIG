@@ -156,8 +156,12 @@ public class SinglePass {
 		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 		SinglePass singlePassAlgorithm = new SinglePass();
 		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.01, 5);
-		System.out.println(datasetHandler.numberOfDocuments());
-		System.out.println(clusters.size());
+		System.out.println("Number of documents = "+ datasetHandler.numberOfDocuments());
+		Enumeration e = clusters.keys();
+		while (e.hasMoreElements()) {
+			String clusterID = (String) e.nextElement();
+			System.out.println("Cluster = " + clusterID + " has number of documents = " + clusters.get(clusterID).getDocumentIDs().size());			
+		}
 		neo4jHandler.registerShutdownHook();	
 	}
 
