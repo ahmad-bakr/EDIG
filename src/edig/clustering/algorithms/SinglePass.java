@@ -25,6 +25,7 @@ public class SinglePass {
 		int numberOfClusters = 0;
 		//loop for documents in the dataset
 		while (e.hasMoreElements()) {
+			Hashtable<String, Double> candidateClustersHash = new Hashtable<String, Double>();
 			String documentID = (String) e.nextElement();
 	//		System.out.println("Processing document "+ documentID );
 			Document document = docsHash.get(documentID);
@@ -49,12 +50,11 @@ public class SinglePass {
 					Neo4jCluster candidateNeo4jCluster = clustersList.get(candidateClusterID);
 					// calculate the average similarity to the cluster
 					double averageSimilairtyToCluster = calculateAvgSimilairtyToCluster(neo4jDocument, candidateNeo4jCluster, datasetHandler, neo4jHandler);
-					// if the average similarity greater the the threshold then add the document to the cluster
+					// if the average similarity greater the the threshold then the cluster to the candidate clusters
 					if(averageSimilairtyToCluster > similairtyThreshold){
 						clusteredYet = true;
-						candidateNeo4jCluster.addDcoument(neo4jDocument.getDocumentID());
-						neo4jDocument.addCluster(candidateClusterID, averageSimilairtyToCluster);
-					}// end if adding document to the cluster
+						candidateClustersHash.put(candidateClusterID, averageSimilairtyToCluster);
+					}// end if adding cluster to candidate cluster hash
 				 }//end loop for candidate clusters
 				}//end if [checking if the distance to the candidate document is less than the threshold] 
 			}//end looping for similar documents
@@ -65,11 +65,36 @@ public class SinglePass {
 				newCluster.addDcoument(documentID);
 				neo4jDocument.addCluster(newCluster.getId(), 1);
 				clustersList.put(newCluster.getId(), newCluster);
+			}else{ // add to the cloeset cluster
+				String nearestClusterID = getNearestCluster(candidateClustersHash);
+				Neo4jCluster cluster = clustersList.get(nearestClusterID);
+				cluster.addDcoument(neo4jDocument.getDocumentID());
+				neo4jDocument.addCluster(nearestClusterID, 1);
+
 			}
 			
 		} // end loop for all documents in the data set
 
 		return clustersList;
+	}
+	
+	private String getNearestCluster(Hashtable<String, Double> clustersHash){
+		Enumeration e = clustersHash.keys();
+		String closestCluster ="";
+		double value = 0.0;
+		while (e.hasMoreElements()) {
+			String cluster = (String) e.nextElement();
+			if(closestCluster.equalsIgnoreCase("")){
+				closestCluster = cluster;
+				value = clustersHash.get(cluster);
+			}else{
+				if(value < clustersHash.get(cluster)){
+					closestCluster = cluster;
+					value = clustersHash.get(cluster);
+				}
+			}
+		}
+		return closestCluster;
 	}
 	
 	/**
@@ -130,7 +155,7 @@ public class SinglePass {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
 		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 		SinglePass singlePassAlgorithm = new SinglePass();
-		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.1, 5);
+		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 0.01, 5);
 		System.out.println(datasetHandler.numberOfDocuments());
 		System.out.println(clusters.size());
 		neo4jHandler.registerShutdownHook();	
