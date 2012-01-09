@@ -43,6 +43,7 @@ public class AverageLinkage {
 			clustersExists.add(true);
 			Neo4jCluster c = new Neo4jCluster(String.valueOf(i));
 			c.addDcoument(documents.get(i).getDocumentID());
+			finalClustersList.add(c);
 		}
 
 		initializeSimilairtyMatrix(documents);
