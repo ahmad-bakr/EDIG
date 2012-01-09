@@ -49,7 +49,7 @@ public class FMeasure {
 	}
 	
 	public double getFmeasure() {
-		return fmeasure;
+		return (2.0*this.precision*this.recall)/(this.precision+this.recall);
 	}
 	
 	public double getPrecision() {

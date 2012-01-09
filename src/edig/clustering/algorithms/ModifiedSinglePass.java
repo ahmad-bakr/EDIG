@@ -17,6 +17,7 @@ import edig.document.similarity.DCSimilairty;
 import edig.document.similarity.DDSimIF;
 import edig.document.similarity.DDSimilairty;
 import edig.entites.Document;
+import edig.evaluations.FMeasure;
 
 public class ModifiedSinglePass {
 	
@@ -28,8 +29,9 @@ public class ModifiedSinglePass {
 		int numberOfClusters = 0;
 		//loop for documents in the dataset
 		while (e.hasMoreElements()) {
+			Hashtable<String, Double> candidateClustersHash = new Hashtable<String, Double>();
 			String documentID = (String) e.nextElement();
-			//System.out.println("Processing document "+ documentID );
+	//		System.out.println("Processing document "+ documentID );
 			Document document = docsHash.get(documentID);
 			Neo4jDocument neo4jDocument = neo4jHandler.loadDocument(document);
 			boolean clusteredYet = false;
@@ -42,9 +44,7 @@ public class ModifiedSinglePass {
 				// continue if the current similar document has no clusters
 				if(neo4jSimilarDocument.getClustersHash().isEmpty()) continue;
 				// check if the distance to the document is greater than the threshold
-				double sim = similarityCalculator.calculateSimilarity(neo4jDocument, neo4jSimilarDocument, datasetHandler.numberOfDocuments());
-				System.out.println(sim);
-				if(sim > similairtyThreshold ){
+				if(similarityCalculator.calculateSimilarity(neo4jDocument, neo4jSimilarDocument, datasetHandler.numberOfDocuments()) > similairtyThreshold ){
 					//get the clusters of the similar document
 				 ArrayList<String> candidateDocumentClustersIDs = neo4jSimilarDocument.getClusterIDsList();
 					// loop over the clusters of the similar document
@@ -54,12 +54,11 @@ public class ModifiedSinglePass {
 					Neo4jCluster candidateNeo4jCluster = clustersList.get(candidateClusterID);
 					// calculate the average similarity to the cluster
 					double averageSimilairtyToCluster = calculateAvgSimilairtyToCluster(neo4jDocument, candidateNeo4jCluster, datasetHandler, neo4jHandler);
-					// if the average similarity greater the the threshold then add the document to the cluster
+					// if the average similarity greater the the threshold then the cluster to the candidate clusters
 					if(averageSimilairtyToCluster > similairtyThreshold){
 						clusteredYet = true;
-						candidateNeo4jCluster.addDcoument(neo4jDocument.getDocumentID());
-						neo4jDocument.addCluster(candidateClusterID, averageSimilairtyToCluster);
-					}// end if adding document to the cluster
+						candidateClustersHash.put(candidateClusterID, averageSimilairtyToCluster);
+					}// end if adding cluster to candidate cluster hash
 				 }//end loop for candidate clusters
 				}//end if [checking if the distance to the candidate document is less than the threshold] 
 			}//end looping for similar documents
@@ -70,12 +69,38 @@ public class ModifiedSinglePass {
 				newCluster.addDcoument(documentID);
 				neo4jDocument.addCluster(newCluster.getId(), 1);
 				clustersList.put(newCluster.getId(), newCluster);
+			}else{ // add to the cloeset cluster
+				String nearestClusterID = getNearestCluster(candidateClustersHash);
+				Neo4jCluster cluster = clustersList.get(nearestClusterID);
+				cluster.addDcoument(neo4jDocument.getDocumentID());
+				neo4jDocument.addCluster(nearestClusterID, 1);
+
 			}
 			
 		} // end loop for all documents in the data set
 
 		return clustersList;
 	}
+	
+	private String getNearestCluster(Hashtable<String, Double> clustersHash){
+		Enumeration e = clustersHash.keys();
+		String closestCluster ="";
+		double value = 0.0;
+		while (e.hasMoreElements()) {
+			String cluster = (String) e.nextElement();
+			if(closestCluster.equalsIgnoreCase("")){
+				closestCluster = cluster;
+				value = clustersHash.get(cluster);
+			}else{
+				if(value < clustersHash.get(cluster)){
+					closestCluster = cluster;
+					value = clustersHash.get(cluster);
+				}
+			}
+		}
+		return closestCluster;
+	}
+	
 	
 	/**
 	 * Calculate the average similarity to the cluster
@@ -91,10 +116,10 @@ public class ModifiedSinglePass {
 		double similarity =0 ;
 		DCSimIF similairtyCalculator = new DCSimilairty();
 		similarity = similairtyCalculator.calculateSimilairty(document, cluster, datasetHandler.numberOfDocuments(), neo4jHandler, datasetHandler);
-		//System.out.println(similarity);
+		System.out.println(similarity);
 		return similarity;
 	}
-	
+
 	/**
 	 * Get similar documents to the current document by matching the nodes
 	 * @param doc target document
@@ -127,18 +152,36 @@ public class ModifiedSinglePass {
 		return similarDocument;
 	}
 	
-	
 	public static void main(String[] args) throws Exception {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
 		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		long startTime = System.currentTimeMillis();
 		ModifiedSinglePass singlePassAlgorithm = new ModifiedSinglePass();
-		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, 1, 5);
-		System.out.println(datasetHandler.numberOfDocuments());
-		System.out.println(clusters.size());
+		double threshold = 0.115;
+		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, threshold, 5);
+		long endTime = System.currentTimeMillis();
+		FMeasure fmeasureCalculate = new FMeasure();
+		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
+		System.out.println("*********************");
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("******* For Threshold = " + threshold);
+		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());
+		System.out.println("Precision = "+ fmeasureCalculate.getPrecision());
+		System.out.println("Recall = "+ fmeasureCalculate.getRecall());
+		System.out.println("*********************");
+		
+//		System.out.println("Number of documents = "+ datasetHandler.numberOfDocuments());
+//		Enumeration e = clusters.keys();
+//		while (e.hasMoreElements()) {
+//			String clusterID = (String) e.nextElement();
+//			System.out.println("Cluster = " + clusterID + " has number of documents = " + clusters.get(clusterID).getDocumentIDs().size());	
+//			ArrayList<Neo4jDocument> documents = clusters.get(clusterID).getDocumentsList(datasetHandler, neo4jHandler); 
+//			for (int i = 0; i < documents.size(); i++) {
+//				System.out.println(datasetHandler.getDocument(documents.get(i).getDocumentID()).getOrginalCluster());
+//			}
+//			System.out.println(("*********************************************************************************"));
+//		}
 		neo4jHandler.registerShutdownHook();	
 	}
-
-	
-	
 
 }
