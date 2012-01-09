@@ -58,10 +58,19 @@ public class AverageLinkage {
 		return clustersList;
 	}
 	
+	/**
+	 * Merge two clusters
+	 * @param i cluster i
+	 * @param j cluster j
+	 */
 	public void mergeCluster(int i, int j){
 		
 	}
 	
+	/**
+	 * Get the closest clusters 
+	 * @return closest clusters
+	 */
 	public int[] getClosestClusters(){
 		int []arr = new int[2];
 		arr[0]=0;
@@ -79,6 +88,10 @@ public class AverageLinkage {
 		return arr;
 	}
 	
+	/**
+	 * Get number of remaining clusters
+	 * @return remaining clusters number
+	 */
 	private int getNumberOfRemainingCluster(){
 		int count =0;
 		for (int i = 0; i < clustersExists.size(); i++) {
@@ -87,6 +100,10 @@ public class AverageLinkage {
 		return count;
 	}
 	
+	/**
+	 * Initialize similarity matrix
+	 * @param documents 
+	 */
 	public void initializeSimilairtyMatrix(ArrayList<Neo4jDocument> documents){
 		DDSimIF similarityCalculate = new DDSimilairty();
 		for (int i = 0; i < documents.size(); i++) {
