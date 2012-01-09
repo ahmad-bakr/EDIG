@@ -32,24 +32,59 @@ public class AverageLinkage {
 	  docsHash = datasetHandler.loadDocuments();
 	  numberOfDocuments = datasetHandler.numberOfDocuments();
 		this.similairtyMatrix = new double[datasetHandler.numberOfDocuments()][datasetHandler.numberOfDocuments()];
-		for (int i = 0; i < datasetHandler.numberOfDocuments(); i++) {
-			clustersExists.add(true);
-		}
 		ArrayList<Neo4jDocument> documents = new ArrayList<Neo4jDocument>();
 		Enumeration e = docsHash.keys();
 		while (e.hasMoreElements()) {
 			Document d = (Document) e.nextElement();
 			documents.add(neo4jHandler.loadDocument(d));
 		}
+		
+		for (int i = 0; i < datasetHandler.numberOfDocuments(); i++) {
+			clustersExists.add(true);
+			Neo4jCluster c = new Neo4jCluster(String.valueOf(i));
+			c.addDcoument(documents.get(i).getDocumentID());
+		}
+
 		initializeSimilairtyMatrix(documents);
+
 	}
 	
 	public Hashtable<String, Neo4jCluster> perfrom() throws Exception{
 		Hashtable<String,Neo4jCluster> clustersList = new Hashtable<String,Neo4jCluster>();
-		while(clustersColumns.size() > numberOfClusters){
-			
+		while(getNumberOfRemainingCluster() > numberOfClusters){
+			int [] closestPair = getClosestClusters();
+			mergeCluster(closestPair[0], closestPair[1]);
 		}
 		return clustersList;
+	}
+	
+	public void mergeCluster(int i, int j){
+		
+	}
+	
+	public int[] getClosestClusters(){
+		int []arr = new int[2];
+		arr[0]=0;
+		arr[1]=0;
+		double largestSimilarity = 0;
+		for (int i = 0; i < numberOfDocuments; i++) {
+			for (int j = 0; j < numberOfClusters; j++) {
+				if( i>j || i==j ||!clustersExists.get(i) || !clustersExists.get(j) ) continue;
+				if(similairtyMatrix[i][j] > largestSimilarity){
+					arr[0]=i;
+					arr[1]=j;
+				}
+			}
+		}
+		return arr;
+	}
+	
+	private int getNumberOfRemainingCluster(){
+		int count =0;
+		for (int i = 0; i < clustersExists.size(); i++) {
+			if(clustersExists.get(i)) count++;
+		}
+		return count;
 	}
 	
 	public void initializeSimilairtyMatrix(ArrayList<Neo4jDocument> documents){
