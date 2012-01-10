@@ -6,6 +6,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
+import com.aliasi.cluster.LatentDirichletAllocation;
+
 import edig.datasets.DatasetLoader;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
@@ -33,21 +35,22 @@ public class AverageLinkage {
 		this.finalClustersList = new ArrayList<Neo4jCluster>();
 		this.numberOfClusters = clustersNumber;
 	  docsHash = datasetHandler.loadDocuments();
-	  numberOfDocuments = datasetHandler.numberOfDocuments();
 		this.similairtyMatrix = new double[datasetHandler.numberOfDocuments()][datasetHandler.numberOfDocuments()];
 		ArrayList<Neo4jDocument> documents = new ArrayList<Neo4jDocument>();
 		Enumeration e = docsHash.keys();
 		while (e.hasMoreElements()) {
-			Document d = (Document) e.nextElement();
-			documents.add(neo4jHandler.loadDocument(d));
+			String d = (String) e.nextElement();
+			Document doc = docsHash.get(d);
+			documents.add(neo4jHandler.loadDocument(doc));
 		}
 		
-		for (int i = 0; i < datasetHandler.numberOfDocuments(); i++) {
+		for (int i = 0; i < documents.size(); i++) {
 			clustersExists.add(true);
 			Neo4jCluster c = new Neo4jCluster(String.valueOf(i));
 			c.addDcoument(documents.get(i).getDocumentID());
 			finalClustersList.add(c);
 		}
+		numberOfDocuments = documents.size();
 
 		initializeSimilairtyMatrix(documents);
 
@@ -63,7 +66,9 @@ public class AverageLinkage {
 		int remainingClusters = getNumberOfRemainingCluster();
 		while( remainingClusters > numberOfClusters){
 			System.out.println("Remaining clusters = "+ remainingClusters);
+			remainingClusters = getNumberOfRemainingCluster();
 			int [] closestPair = getClosestClusters();
+			System.out.println(closestPair[0] + "  " + closestPair[1]);
 			mergeClusters(closestPair[0], closestPair[1]);
 		}
 		for (int i = 0; i < finalClustersList.size(); i++) {
@@ -124,13 +129,14 @@ public class AverageLinkage {
 		int []arr = new int[2];
 		arr[0]=0;
 		arr[1]=0;
-		double largestSimilarity = 0;
+		double largestSimilarity = -100;
 		for (int i = 0; i < numberOfDocuments; i++) {
-			for (int j = 0; j < numberOfClusters; j++) {
-				if( i>j || i==j ||!clustersExists.get(i) || !clustersExists.get(j) ) continue;
+			for (int j = 0; j < numberOfDocuments; j++) {
+				if( i>=j || !clustersExists.get(i) || !clustersExists.get(j) ) continue;
 				if(similairtyMatrix[i][j] > largestSimilarity){
 					arr[0]=i;
 					arr[1]=j;
+					largestSimilarity = similairtyMatrix[i][j];
 				}
 			}
 		}
@@ -157,14 +163,11 @@ public class AverageLinkage {
 		DDSimIF similarityCalculate = new DDSimilairty();
 		for (int i = 0; i < documents.size(); i++) {
 			for (int j = 0; j < documents.size(); j++) {
-				if(i>j) continue;
-				if(i==j){
-					this.similairtyMatrix[i][j]=0;
-				}else{
-					this.similairtyMatrix[i][j] = similarityCalculate.calculateSimilarity(documents.get(i), documents.get(j), numberOfDocuments);
-				}
+				if(i>=j) continue;
+				 this.similairtyMatrix[i][j] = similarityCalculate.calculateSimilarity(documents.get(i), documents.get(j), numberOfDocuments);
 			}
 		}
+				
 	}
 	
 	public static void main(String[] args) throws Exception {
