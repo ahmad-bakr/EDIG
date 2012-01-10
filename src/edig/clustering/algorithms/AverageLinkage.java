@@ -7,12 +7,14 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 
 import edig.datasets.DatasetLoader;
+import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
 import edig.dig.representation.Neo4jHandler;
 import edig.document.similarity.DDSimIF;
 import edig.document.similarity.DDSimilairty;
 import edig.entites.Document;
+import edig.evaluations.FMeasure;
 
 public class AverageLinkage {
 	private DatasetLoader datasetHandler;
@@ -58,7 +60,9 @@ public class AverageLinkage {
 	 */
 	public Hashtable<String, Neo4jCluster> perfrom() throws Exception{
 		Hashtable<String,Neo4jCluster> clustersList = new Hashtable<String,Neo4jCluster>();
-		while(getNumberOfRemainingCluster() > numberOfClusters){
+		int remainingClusters = getNumberOfRemainingCluster();
+		while( remainingClusters > numberOfClusters){
+			System.out.println("Remaining clusters = "+ remainingClusters);
 			int [] closestPair = getClosestClusters();
 			mergeClusters(closestPair[0], closestPair[1]);
 		}
@@ -163,8 +167,25 @@ public class AverageLinkage {
 		}
 	}
 	
-	public static void main(String[] args) {
-		
+	public static void main(String[] args) throws Exception {
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
+		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		long startTime = System.currentTimeMillis();
+		int numberOfClusters = 10;
+		AverageLinkage avgLink = new AverageLinkage(datasetHandler, neo4jHandler, numberOfClusters);
+		Hashtable<String, Neo4jCluster> clusters = avgLink.perfrom();
+		long endTime = System.currentTimeMillis();
+		FMeasure fmeasureCalculate = new FMeasure();
+		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
+		System.out.println("*********************");
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+
+		System.out.println("******* For Number of clusters = " + numberOfClusters);
+		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());
+		System.out.println("Precision = "+ fmeasureCalculate.getPrecision());
+		System.out.println("Recall = "+ fmeasureCalculate.getRecall());
+		System.out.println("*********************");
+
 	}
 	
 	
