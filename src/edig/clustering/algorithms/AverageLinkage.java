@@ -1,5 +1,6 @@
 package edig.clustering.algorithms;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -50,12 +51,24 @@ public class AverageLinkage {
 
 	}
 	
+	/**
+	 * Perform the average linkage
+	 * @return average linkage
+	 * @throws Exception
+	 */
 	public Hashtable<String, Neo4jCluster> perfrom() throws Exception{
 		Hashtable<String,Neo4jCluster> clustersList = new Hashtable<String,Neo4jCluster>();
 		while(getNumberOfRemainingCluster() > numberOfClusters){
 			int [] closestPair = getClosestClusters();
-			mergeCluster(closestPair[0], closestPair[1]);
+			mergeClusters(closestPair[0], closestPair[1]);
 		}
+		for (int i = 0; i < finalClustersList.size(); i++) {
+			if(clustersExists.get(i)){
+				Neo4jCluster c = finalClustersList.get(i);
+				clustersList.put(c.getId(), c);
+			}
+		}
+		
 		return clustersList;
 	}
 	
@@ -63,9 +76,40 @@ public class AverageLinkage {
 	 * Merge two clusters
 	 * @param i cluster i
 	 * @param j cluster j
+	 * @throws Exception 
 	 */
-	public void mergeCluster(int i, int j){
-		
+	public void mergeClusters(int i, int j) throws Exception{
+		Neo4jCluster clusteri = finalClustersList.get(i);
+		Neo4jCluster clusterj = finalClustersList.get(j);
+		clustersExists.set(j, false);
+		ArrayList<String> clusterJDocuments = clusterj.getDocumentIDs();
+		for (int k = 0; k < clusterJDocuments.size(); k++) {
+			clusteri.addDcoument(clusterJDocuments.get(k));
+		}
+		updateSimilarityMatrix(i);
+	}
+	
+	
+	public void updateSimilarityMatrix(int clusterIndex) throws Exception{
+		Neo4jCluster updatedCluster = finalClustersList.get(clusterIndex); 
+		//update its row
+		for (int i = 0; i < numberOfClusters; i++) {
+			if(!clustersExists.get(i)) continue;
+			similairtyMatrix[clusterIndex][i] = calculateSimilarity(finalClustersList.get(clusterIndex), finalClustersList.get(i));
+		}
+	}
+	
+	public double calculateSimilarity(Neo4jCluster cluster1, Neo4jCluster cluster2) throws Exception{
+		double similairty = 0;
+		DDSimIF  similarityCalculator = new DDSimilairty();
+		ArrayList<Neo4jDocument> documents1 = cluster1.getDocumentsList(datasetHandler, neo4jHandler);
+		ArrayList<Neo4jDocument> documents2 = cluster2.getDocumentsList(datasetHandler, neo4jHandler);
+		for (int i = 0; i < documents1.size(); i++) {
+			for (int j = 0; j < documents2.size(); j++) {
+				similairty+= similarityCalculator.calculateSimilarity(documents1.get(i), documents2.get(j), numberOfDocuments);
+			}
+		}
+		return similairty/(documents1.size()*documents2.size());
 	}
 	
 	/**
@@ -119,7 +163,9 @@ public class AverageLinkage {
 		}
 	}
 	
-
+	public static void main(String[] args) {
+		
+	}
 	
 	
 	
