@@ -1,12 +1,8 @@
 package edig.clustering.algorithms;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.LinkedList;
-
-import com.aliasi.cluster.LatentDirichletAllocation;
 
 import edig.datasets.DatasetLoader;
 import edig.datasets.UWCANDataset;
@@ -18,7 +14,7 @@ import edig.document.similarity.DDSimilairty;
 import edig.entites.Document;
 import edig.evaluations.FMeasure;
 
-public class AverageLinkage {
+public class SingleLinkage {
 	private DatasetLoader datasetHandler;
 	private Neo4jHandler  neo4jHandler;
 	private ArrayList<Neo4jCluster> finalClustersList; 
@@ -28,7 +24,7 @@ public class AverageLinkage {
 	private ArrayList<Boolean> clustersExists;
 	private double[][] similairtyMatrix;
 	
-	public AverageLinkage(DatasetLoader datasetHandler, Neo4jHandler neo4jHandler, int clustersNumber) throws Exception {
+	public SingleLinkage(DatasetLoader datasetHandler, Neo4jHandler neo4jHandler, int clustersNumber) throws Exception {
 		this.datasetHandler = datasetHandler;
 		this.neo4jHandler = neo4jHandler;
 		this.clustersExists = new ArrayList<Boolean>();
@@ -112,16 +108,17 @@ public class AverageLinkage {
 	}
 	
 	public double calculateSimilarity(Neo4jCluster cluster1, Neo4jCluster cluster2) throws Exception{
-		double similairty = 0;
+		double similairty = -100;
 		DDSimIF  similarityCalculator = new DDSimilairty();
 		ArrayList<Neo4jDocument> documents1 = cluster1.getDocumentsList(datasetHandler, neo4jHandler);
 		ArrayList<Neo4jDocument> documents2 = cluster2.getDocumentsList(datasetHandler, neo4jHandler);
 		for (int i = 0; i < documents1.size(); i++) {
 			for (int j = 0; j < documents2.size(); j++) {
-				similairty+= similarityCalculator.calculateSimilarity(documents1.get(i), documents2.get(j), numberOfDocuments);
+				double sim = similarityCalculator.calculateSimilarity(documents1.get(i), documents2.get(j), numberOfDocuments);
+				if(sim > similairty) similairty = sim;
 			}
 		}
-		return similairty/(documents1.size()*documents2.size());
+		return similairty;
 	}
 	
 	/**
@@ -177,9 +174,9 @@ public class AverageLinkage {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
 		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 		long startTime = System.currentTimeMillis();
-		int numberOfClusters = 70;
-		AverageLinkage avgLink = new AverageLinkage(datasetHandler, neo4jHandler, numberOfClusters);
-		Hashtable<String, Neo4jCluster> clusters = avgLink.perfrom();
+		int numberOfClusters = 10;
+		SingleLinkage sinLink = new SingleLinkage(datasetHandler, neo4jHandler, numberOfClusters);
+		Hashtable<String, Neo4jCluster> clusters = sinLink.perfrom();
 		long endTime = System.currentTimeMillis();
 		FMeasure fmeasureCalculate = new FMeasure();
 		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
@@ -194,6 +191,5 @@ public class AverageLinkage {
 
 	}
 	
-	
-	
+
 }

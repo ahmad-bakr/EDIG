@@ -23,6 +23,11 @@ public class Neo4jCluster {
 		return id;
 	}
 	
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
 	/**
 	 * Get the cluster representative
 	 * @param datasetHandler dataset handler

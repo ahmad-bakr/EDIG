@@ -92,7 +92,8 @@ public class FMeasure {
 		for (int i = 0; i < documents.size(); i++) {
 			Neo4jDocument d = documents.get(i);
 			String originalClass = datasetHandler.getDocument(d.getDocumentID()).getOrginalCluster();
-			this.confusionMatrix.get(originalClass).set(clusterIDIndex, this.confusionMatrix.get(originalClass).get(clusterIDIndex) +1);
+			int count = this.confusionMatrix.get(originalClass).get(clusterIDIndex);
+			this.confusionMatrix.get(originalClass).set(clusterIDIndex, count +1);
 		}
 	}
 	
