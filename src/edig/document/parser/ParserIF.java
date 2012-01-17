@@ -6,5 +6,5 @@ import edig.entites.Sentence;
 
 
 public interface ParserIF {
-	public ArrayList<Sentence> parseText(String text) throws Exception;
+	public ArrayList<Sentence> parseText(String text, boolean isTitle) throws Exception;
 }

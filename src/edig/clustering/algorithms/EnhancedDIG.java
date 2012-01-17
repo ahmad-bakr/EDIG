@@ -56,7 +56,13 @@ public class EnhancedDIG {
 				Node currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();
 				
 				if(currentNodeInGraph != null){ // currentWord exists in the graph
-					updateWordsClusterImportanceTable(clusterSimilairtyTableForWords, currentNodeInGraph, 1);
+					double wordValueForTheDocument = 1;
+					if (currentWord.getIsTitle()){
+						wordValueForTheDocument = 1/doc.getNumberOfTitleWords();
+					}else{
+						wordValueForTheDocument = 1/doc.getNumberOfBodyWords();
+					}
+					updateWordsClusterImportanceTable(clusterSimilairtyTableForWords, currentNodeInGraph, wordValueForTheDocument);
 				}else{ // currentWord is a new word 
 					currentNodeInGraph = createNewWord(currentWord);
 				}

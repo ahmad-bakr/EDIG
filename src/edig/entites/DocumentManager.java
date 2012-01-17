@@ -21,8 +21,8 @@ public class DocumentManager {
 	 * @throws Exception
 	 */
 	public static Document createDocument(String id,String title, String body) throws Exception{
-		Sentence titleSentence = flatten(parser.parseText(title.toLowerCase()));
-		ArrayList<Sentence> bodySentences = parser.parseText(body.toLowerCase());
+		Sentence titleSentence = flatten(parser.parseText(title.toLowerCase(), true));
+		ArrayList<Sentence> bodySentences = parser.parseText(body.toLowerCase(), false);
 		Document doc = new Document(id);
 		int numberOfBodyWords=0;
 		doc.setNumberOfTitleWords(titleSentence.getWords().size());

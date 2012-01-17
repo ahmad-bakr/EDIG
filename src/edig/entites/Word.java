@@ -9,23 +9,25 @@ public class Word {
 
 	private String content;
 	private int termFrequency =1;
+	private boolean isTitle;
 
 	/**
 	 * Constructor of word class
 	 * @param word the word
 	 * @param tf the term frequency
 	 */
-	public Word(String word, int tf) {
+	public Word(String word, int tf, boolean isTitle) {
 		this.content = word;
 		this.termFrequency = tf;
+		this.isTitle = isTitle;
 	}	
 	
-	/**
-	 * Constructor of word class
-	 * @param word the word, the term frequency is 1
-	 */
-	public Word(String word) {
-		this.content = word;
+	public void setIsTitle(boolean isTitle) {
+		this.isTitle = isTitle;
+	}
+	
+	public boolean getIsTitle(){
+		return this.isTitle;
 	}
 	
 	/**

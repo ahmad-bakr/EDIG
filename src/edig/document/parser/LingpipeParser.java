@@ -27,7 +27,7 @@ public class LingpipeParser implements ParserIF{
   static final Hashtable<String, Boolean> STOPWORDS = loadStopWords("english_stop_words.txt"); 
 
   @Override
-	public ArrayList<Sentence> parseText(String text) throws Exception {
+	public ArrayList<Sentence> parseText(String text, boolean isTitle) throws Exception {
  	  Class stemClass = Class.forName("org.tartarus.snowball.ext." + "english" + "Stemmer");
     SnowballStemmer stemmer = (SnowballStemmer) stemClass.newInstance();
 		ArrayList<Sentence> sentenceList = new ArrayList<Sentence>();
@@ -49,7 +49,8 @@ public class LingpipeParser implements ParserIF{
   	    	if (!STOPWORDS.containsKey(tokens[j])){
     	    	stemmer.setCurrent(tokens[j]);
     		  	stemmer.stem();
-    		  	Word w = new Word(stemmer.getCurrent());
+    		  	Word w = new Word(stemmer.getCurrent(), 1, isTitle);
+    		  
     		  	if (w.getContent().length() >= 3) sentence.addWord(w) ;   	    		
   	    	}
 
@@ -79,7 +80,7 @@ public class LingpipeParser implements ParserIF{
 	
 	public static void main(String[] args) throws Exception {
 		LingpipeParser parser = new LingpipeParser();
-		ArrayList<Sentence> sentences = parser.parseText("Hello, this is test for and about extension");
+		ArrayList<Sentence> sentences = parser.parseText("Hello, this is test for and about extension", true);
 		for (int i = 0; i < sentences.size(); i++) {
 			for (int j = 0; j < sentences.get(i).getWords().size(); j++) {
 				System.out.print(sentences.get(i).getWords().get(j).getContent()+ " ");
