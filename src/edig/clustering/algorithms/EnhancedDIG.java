@@ -8,6 +8,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -41,26 +42,23 @@ public class EnhancedDIG {
 	
 	public void clusterDocument(Document doc) throws Exception{
 		ArrayList<Sentence> sentencesList = doc.getSentences();
-		int numberOfWords = 0;
+		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
+		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
+		
 		//Loop for each sentence of the document
 		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
 			Sentence currentSentence = sentencesList.get(sentenceIndex);
 			ArrayList<Word> currentSentenceWords = currentSentence.getWords();
 			//Loop for the words of the current sentence
 			Word previousWord = null;
-			numberOfWords += currentSentenceWords.size();
 			for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
 				Word currentWord = currentSentenceWords.get(wordIndex);
 				Node currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();
-
+				
 				if(currentNodeInGraph != null){ // currentWord exists in the graph
-					
+					updateWordsClusterImportanceTable(clusterSimilairtyTableForWords, currentNodeInGraph, 1);
 				}else{ // currentWord is a new word 
-					Node graphNode = graphDb.createNode();
-					graphNode.setProperty(Neo4jNode.WORD_PROPERTY, currentWord.getContent());
-					Hashtable<String, Double> wordImportanceTable = new Hashtable<String, Double>();
-					graphNode.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(wordImportanceTable));
-					nodeIndex.add(graphNode, Neo4jNode.WORD_PROPERTY, currentWord.getContent());
+					currentNodeInGraph = createNewWord(currentWord);
 				}
 				
 				
@@ -68,6 +66,30 @@ public class EnhancedDIG {
 				previousWord = currentWord;
 			}// end loop for words of the current sentence
 		}// end loop of sentence of the document
+	}
+	
+	public void updateWordsClusterImportanceTable(Hashtable<String, Double> clusterSimilairtyTableForWords, Node nodeInTheGraph, double wordValue) throws Exception{
+		Hashtable<String, Double> clusterImportanceTable = (Hashtable<String, Double>) deserializeObject((byte[]) nodeInTheGraph.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)); 
+		Enumeration clustersIDs = clusterImportanceTable.keys();
+		//loop for all clusters in the node and update the cluster similarity table for the document
+		while (clustersIDs.hasMoreElements()) {
+			String clusterID = (String) clustersIDs.nextElement();
+			if(clusterSimilairtyTableForWords.containsKey(clusterID)){
+				double wordValueForTheCluster = clusterImportanceTable.get(clusterID);
+				clusterImportanceTable.put(clusterID, wordValueForTheCluster+wordValue);
+			}else{
+				clusterImportanceTable.put(clusterID, wordValue);
+			}
+		}// end loop for clusters at the matched node
+	}
+	
+	public Node createNewWord(Word word) throws Exception{
+		Node graphNode = graphDb.createNode();
+		graphNode.setProperty(Neo4jNode.WORD_PROPERTY, word.getContent());
+		Hashtable<String, Double> clusterImportanceTable = new Hashtable<String, Double>();
+		graphNode.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(clusterImportanceTable));
+		nodeIndex.add(graphNode, Neo4jNode.WORD_PROPERTY, word.getContent());
+		return graphNode;
 	}
 	
 	
