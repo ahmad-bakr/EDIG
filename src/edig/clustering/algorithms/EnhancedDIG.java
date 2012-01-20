@@ -11,9 +11,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
@@ -42,8 +45,11 @@ public class EnhancedDIG {
 	
 	public void clusterDocument(Document doc) throws Exception{
 		ArrayList<Sentence> sentencesList = doc.getSentences();
+		
+		// these tables will be used to calculate the similarity between the new document and existing cluster
 		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
 		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
+		///
 		
 		//Loop for each sentence of the document
 		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
@@ -51,27 +57,50 @@ public class EnhancedDIG {
 			ArrayList<Word> currentSentenceWords = currentSentence.getWords();
 			//Loop for the words of the current sentence
 			Word previousWord = null;
+			Word currentWord = null;
+			Node previousNodeInTheGraph = null;
+			Node currentNodeInGraph = null;
 			for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
-				Word currentWord = currentSentenceWords.get(wordIndex);
-				Node currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();
-				
+			  currentWord = currentSentenceWords.get(wordIndex);
+			  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
+				double wordValueForTheDocument = calculateWordValue(doc, currentWord);
+				// start handling the word
 				if(currentNodeInGraph != null){ // currentWord exists in the graph
-					double wordValueForTheDocument = 1;
-					if (currentWord.getIsTitle()){
-						wordValueForTheDocument = 1/doc.getNumberOfTitleWords();
-					}else{
-						wordValueForTheDocument = 1/doc.getNumberOfBodyWords();
-					}
 					updateWordsClusterImportanceTable(clusterSimilairtyTableForWords, currentNodeInGraph, wordValueForTheDocument);
 				}else{ // currentWord is a new word 
 					currentNodeInGraph = createNewWord(currentWord);
 				}
+				// done handling the nodes
+				// start handling the edges
+				if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
+					String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
+					Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
+					if(edge !=  null){
+						updateEdgesClusterImportanceTable(clusterSimilairtyTableForEdges, edge, 1);
+					}else{
+						createNewEdge(previousNodeInTheGraph, currentNodeInGraph, edgeID);
+					}
+					
+					
+					
+				}
 				
+				// done handling the edges
 				
-				
+				previousNodeInTheGraph = currentNodeInGraph;
 				previousWord = currentWord;
 			}// end loop for words of the current sentence
 		}// end loop of sentence of the document
+	}
+	
+	public double calculateWordValue(Document doc, Word word){
+		double wordValue = 0;
+		if (word.getIsTitle()){
+			wordValue = 1/doc.getNumberOfTitleWords();
+		}else{
+			wordValue = 1/doc.getNumberOfBodyWords();
+		}
+		return wordValue;
 	}
 	
 	public void updateWordsClusterImportanceTable(Hashtable<String, Double> clusterSimilairtyTableForWords, Node nodeInTheGraph, double wordValue) throws Exception{
@@ -82,11 +111,35 @@ public class EnhancedDIG {
 			String clusterID = (String) clustersIDs.nextElement();
 			if(clusterSimilairtyTableForWords.containsKey(clusterID)){
 				double wordValueForTheCluster = clusterImportanceTable.get(clusterID);
-				clusterImportanceTable.put(clusterID, wordValueForTheCluster+wordValue);
+				clusterSimilairtyTableForWords.put(clusterID, wordValueForTheCluster+wordValue);
 			}else{
-				clusterImportanceTable.put(clusterID, wordValue);
+				clusterSimilairtyTableForWords.put(clusterID, wordValue);
 			}
 		}// end loop for clusters at the matched node
+	}
+	
+	public void updateEdgesClusterImportanceTable(Hashtable<String, Double> clusterSimilairtyTableForEdges, Relationship edge, double edgeValueInTheDocument ) throws Exception{
+		Hashtable<String, Double> clusterImportanceTable = (Hashtable<String, Double>) deserializeObject((byte[]) edge.getProperty("cluster_table"));
+		Enumeration clustersIDs = clusterImportanceTable.keys();
+		//loop for all clusters in the node and update the cluster similarity table for the document
+		while (clustersIDs.hasMoreElements()) {
+			String clusterID = (String) clustersIDs.nextElement();
+			if(clusterSimilairtyTableForEdges.containsKey(clusterID)){
+				double edgeValueForTheCluster = clusterImportanceTable.get(clusterID);
+				clusterSimilairtyTableForEdges.put(clusterID, edgeValueForTheCluster + edgeValueInTheDocument);
+			}else{
+				clusterSimilairtyTableForEdges.put(clusterID, edgeValueInTheDocument);
+			}
+		}// end loop for clusters at the matched node
+	}
+	
+	public void createNewEdge(Node previousWord, Node currentWord, String edgeID) throws Exception{
+		RelationshipType type = DynamicRelationshipType.withName(edgeID);
+		Relationship relationship = previousWord.createRelationshipTo(currentWord, type);
+		relationship.setProperty("edge", edgeID);
+		Hashtable<String, Double> clusterImportanceTable = new Hashtable<String, Double>();
+		relationship.setProperty("cluster_table", serializeObject(clusterImportanceTable));
+		edgesIndex.add(relationship, "edge", edgeID);
 	}
 	
 	public Node createNewWord(Word word) throws Exception{
