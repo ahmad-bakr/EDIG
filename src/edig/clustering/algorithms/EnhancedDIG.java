@@ -45,12 +45,10 @@ public class EnhancedDIG {
 	
 	public void clusterDocument(Document doc) throws Exception{
 		ArrayList<Sentence> sentencesList = doc.getSentences();
-		
 		// these tables will be used to calculate the similarity between the new document and existing cluster
 		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
 		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
-		///
-		
+		//
 		//Loop for each sentence of the document
 		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
 			Sentence currentSentence = sentencesList.get(sentenceIndex);
@@ -75,22 +73,36 @@ public class EnhancedDIG {
 				if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
 					String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
 					Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
-					if(edge !=  null){
+					if(edge !=  null){ //edge exists
 						updateEdgesClusterImportanceTable(clusterSimilairtyTableForEdges, edge, 1);
-					}else{
+					}else{ // create new edge
 						createNewEdge(previousNodeInTheGraph, currentNodeInGraph, edgeID);
 					}
-					
-					
-					
 				}
-				
 				// done handling the edges
-				
 				previousNodeInTheGraph = currentNodeInGraph;
 				previousWord = currentWord;
 			}// end loop for words of the current sentence
 		}// end loop of sentence of the document
+		
+		//Now we need to calculate the similarity to the clusters collected and take the decision
+		
+	}
+	
+	public void updateTheGraph(Document doc){
+		ArrayList<Sentence> sentencesList = doc.getSentences();
+		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
+			Sentence currentSentence = sentencesList.get(sentenceIndex);
+			ArrayList<Word> currentSentenceWords = currentSentence.getWords();
+			//Loop for the words of the current sentence
+			Word previousWord = null;
+			Word currentWord = null;
+			Node previousNodeInTheGraph = null;
+			Node currentNodeInGraph = null;
+			for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
+	
+			} // end loop for the words
+		}// end loop for the sentences
 	}
 	
 	public double calculateWordValue(Document doc, Word word){
