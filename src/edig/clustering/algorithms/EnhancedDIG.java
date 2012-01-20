@@ -23,6 +23,7 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import edig.datasets.DatasetLoader;
 import edig.datasets.UWCANDataset;
+import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
 import edig.dig.representation.Neo4jHandler;
 import edig.dig.representation.Neo4jNode;
@@ -36,13 +37,18 @@ public class EnhancedDIG {
 	private  Index<Node> nodeIndex;
 	private Index<Relationship> edgesIndex;
 	private DatasetLoader datasetHandler;
+	private int clusterCounter ;
+	Hashtable<String,Neo4jCluster> clustersList;
 	
 	public EnhancedDIG() {
+		this.clustersList = new Hashtable<String,Neo4jCluster>();
+		this.clusterCounter = 1;
 		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/EDIG");
 		this.nodeIndex = graphDb.index().forNodes("nodes");
 		this.edgesIndex = graphDb.index().forRelationships("relationships");
 		this.datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 	}
+	
 	
 	public void clusterDocument(Document doc) throws Exception{
 		ArrayList<Sentence> sentencesList = doc.getSentences();
@@ -86,8 +92,26 @@ public class EnhancedDIG {
 			}// end loop for words of the current sentence
 		}// end loop of sentence of the document
 		
+		// Evaluate the document to the matched clusters
+		String closestCluster = getClosestCluster(doc, clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
+		if(closestCluster.equalsIgnoreCase("")){ //create new cluster
+			closestCluster = String.valueOf(clusterCounter);
+			updateTheGraph(doc, closestCluster);
+			Neo4jCluster c = new Neo4jCluster(closestCluster);
+			c.addDcoument(doc.getId());
+			this.clustersList.put(c.getId(), c);
+			this.clusterCounter++;
+		}else{
+			updateTheGraph(doc, closestCluster);
+			Neo4jCluster c = this.clustersList.get(closestCluster);
+			c.addDcoument(doc.getId());
+		}
 		//Now we need to calculate the similarity to the clusters collected and take the decision
+	}
+	
+	public String getClosestCluster(Document doc, Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges ){
 		
+		return "";
 	}
 	
 	public void updateTheGraph(Document doc, String clusterID) throws Exception{
