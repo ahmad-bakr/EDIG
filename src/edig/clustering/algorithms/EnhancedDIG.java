@@ -114,18 +114,28 @@ public class EnhancedDIG {
 					}else{
 						clusterImportanceTable.put(clusterID, wordValueForTheDocument);
 					}
-					currentNodeInGraph.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, clusterImportanceTable);
+					currentNodeInGraph.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(clusterImportanceTable));
 					nodeIndex.add(currentNodeInGraph, Neo4jNode.WORD_PROPERTY, currentWord.getContent());
 					// end updating cluster similarity table for the nodes
 					
-					
+					// update the edges
+					if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
+						String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
+						Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
+						Hashtable<String, Double> clusterImportanceTableForEdge  = (Hashtable<String, Double>) deserializeObject((byte[]) edge.getProperty("cluster_table")); 
+						if(clusterImportanceTableForEdge.containsKey(clusterID)){
+							clusterImportanceTableForEdge.put(clusterID, clusterImportanceTableForEdge.get(clusterID)+1);
+						}else{
+							clusterImportanceTableForEdge.put(clusterID, 1.0);
+						}
+						edge.setProperty("cluster_table", serializeObject(clusterImportanceTableForEdge));
+						edgesIndex.add(edge, "edge", edgeID);
+					}
+					// end update the edges
 					previousNodeInTheGraph = currentNodeInGraph;
+					previousWord = currentWord;
 				} // end loop for the words
 			}// end loop for the sentences
-
-			
-			
-			
 			tx.success();
 		} finally {
 			tx.finish();
