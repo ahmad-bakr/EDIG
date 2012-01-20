@@ -17,6 +17,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
@@ -89,20 +90,46 @@ public class EnhancedDIG {
 		
 	}
 	
-	public void updateTheGraph(Document doc){
-		ArrayList<Sentence> sentencesList = doc.getSentences();
-		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
-			Sentence currentSentence = sentencesList.get(sentenceIndex);
-			ArrayList<Word> currentSentenceWords = currentSentence.getWords();
-			//Loop for the words of the current sentence
-			Word previousWord = null;
-			Word currentWord = null;
-			Node previousNodeInTheGraph = null;
-			Node currentNodeInGraph = null;
-			for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
-	
-			} // end loop for the words
-		}// end loop for the sentences
+	public void updateTheGraph(Document doc, String clusterID) throws Exception{
+		Transaction tx = graphDb.beginTx();
+		try {
+
+			ArrayList<Sentence> sentencesList = doc.getSentences();
+			for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
+				Sentence currentSentence = sentencesList.get(sentenceIndex);
+				ArrayList<Word> currentSentenceWords = currentSentence.getWords();
+				//Loop for the words of the current sentence
+				Word previousWord = null;
+				Word currentWord = null;
+				Node previousNodeInTheGraph = null;
+				Node currentNodeInGraph = null;
+				for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
+				  currentWord = currentSentenceWords.get(wordIndex);
+				  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
+					double wordValueForTheDocument = calculateWordValue(doc, currentWord);
+					// update the cluster similarity table for the nodes
+					Hashtable<String, Double> clusterImportanceTable = (Hashtable<String, Double>) deserializeObject((byte[]) currentNodeInGraph.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)); 
+					if (clusterImportanceTable.containsKey(clusterID)){
+						clusterImportanceTable.put(clusterID, clusterImportanceTable.get(clusterID)+wordValueForTheDocument);
+					}else{
+						clusterImportanceTable.put(clusterID, wordValueForTheDocument);
+					}
+					currentNodeInGraph.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, clusterImportanceTable);
+					nodeIndex.add(currentNodeInGraph, Neo4jNode.WORD_PROPERTY, currentWord.getContent());
+					// end updating cluster similarity table for the nodes
+					
+					
+					previousNodeInTheGraph = currentNodeInGraph;
+				} // end loop for the words
+			}// end loop for the sentences
+
+			
+			
+			
+			tx.success();
+		} finally {
+			tx.finish();
+		}
 	}
 	
 	public double calculateWordValue(Document doc, Word word){
