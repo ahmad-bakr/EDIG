@@ -31,7 +31,7 @@ import edig.entites.Document;
 import edig.entites.Sentence;
 import edig.entites.Word;
 
-public class EnhancedDIG {
+public class CIG {
 
 	private  GraphDatabaseService graphDb;
 	private  Index<Node> nodeIndex;
@@ -40,7 +40,7 @@ public class EnhancedDIG {
 	private int clusterCounter ;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
-	public EnhancedDIG() {
+	public CIG() {
 		this.clustersList = new Hashtable<String,Neo4jCluster>();
 		this.clusterCounter = 1;
 		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/EDIG");
@@ -111,6 +111,19 @@ public class EnhancedDIG {
 	
 	public String getClosestCluster(Document doc, Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges ){
 		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
 		return "";
 	}
 	
