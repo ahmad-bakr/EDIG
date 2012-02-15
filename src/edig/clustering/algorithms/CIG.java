@@ -28,6 +28,7 @@ import edig.dig.representation.Neo4jDocument;
 import edig.dig.representation.Neo4jHandler;
 import edig.dig.representation.Neo4jNode;
 import edig.entites.Document;
+import edig.entites.DocumentManager;
 import edig.entites.Sentence;
 import edig.entites.Word;
 
@@ -49,142 +50,21 @@ public class CIG {
 		this.datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 	}
 	
-	
-	public void clusterDocument(Document doc) throws Exception{
-		ArrayList<Sentence> sentencesList = doc.getSentences();
-		// these tables will be used to calculate the similarity between the new document and existing cluster
-		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
-		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
-		//
-		//Loop for each sentence of the document
-		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
-			Sentence currentSentence = sentencesList.get(sentenceIndex);
-			ArrayList<Word> currentSentenceWords = currentSentence.getWords();
-			//Loop for the words of the current sentence
-			Word previousWord = null;
-			Word currentWord = null;
-			Node previousNodeInTheGraph = null;
-			Node currentNodeInGraph = null;
-			for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
-			  currentWord = currentSentenceWords.get(wordIndex);
-			  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
-				double wordValueForTheDocument = calculateWordValue(doc, currentWord);
-				// start handling the word
-				if(currentNodeInGraph != null){ // currentWord exists in the graph
-					updateWordsClusterImportanceTable(clusterSimilairtyTableForWords, currentNodeInGraph, wordValueForTheDocument);
-				}else{ // currentWord is a new word 
-					currentNodeInGraph = createNewWord(currentWord);
-				}
-				// done handling the nodes
-				// start handling the edges
-				if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
-					String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
-					Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
-					if(edge !=  null){ //edge exists
-						updateEdgesClusterImportanceTable(clusterSimilairtyTableForEdges, edge, 1);
-					}else{ // create new edge
-						createNewEdge(previousNodeInTheGraph, currentNodeInGraph, edgeID);
-					}
-				}
-				// done handling the edges
-				previousNodeInTheGraph = currentNodeInGraph;
-				previousWord = currentWord;
-			}// end loop for words of the current sentence
-		}// end loop of sentence of the document
-		
-		// Evaluate the document to the matched clusters
-		String closestCluster = getClosestCluster(doc, clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
-		if(closestCluster.equalsIgnoreCase("")){ //create new cluster
-			closestCluster = String.valueOf(clusterCounter);
-			updateTheGraph(doc, closestCluster);
-			Neo4jCluster c = new Neo4jCluster(closestCluster);
-			c.addDcoument(doc.getId());
-			this.clustersList.put(c.getId(), c);
-			this.clusterCounter++;
-		}else{
-			updateTheGraph(doc, closestCluster);
-			Neo4jCluster c = this.clustersList.get(closestCluster);
-			c.addDcoument(doc.getId());
-		}
-		//Now we need to calculate the similarity to the clusters collected and take the decision
+	public void registerShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				graphDb.shutdown();
+			}
+		});
 	}
-	
-	public String getClosestCluster(Document doc, Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges ){
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 
-		return "";
-	}
-	
-	public void updateTheGraph(Document doc, String clusterID) throws Exception{
-		Transaction tx = graphDb.beginTx();
-		try {
-
-			ArrayList<Sentence> sentencesList = doc.getSentences();
-			for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
-				Sentence currentSentence = sentencesList.get(sentenceIndex);
-				ArrayList<Word> currentSentenceWords = currentSentence.getWords();
-				//Loop for the words of the current sentence
-				Word previousWord = null;
-				Word currentWord = null;
-				Node previousNodeInTheGraph = null;
-				Node currentNodeInGraph = null;
-				for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
-				  currentWord = currentSentenceWords.get(wordIndex);
-				  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
-					double wordValueForTheDocument = calculateWordValue(doc, currentWord);
-					// update the cluster similarity table for the nodes
-					Hashtable<String, Double> clusterImportanceTable = (Hashtable<String, Double>) deserializeObject((byte[]) currentNodeInGraph.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)); 
-					if (clusterImportanceTable.containsKey(clusterID)){
-						clusterImportanceTable.put(clusterID, clusterImportanceTable.get(clusterID)+wordValueForTheDocument);
-					}else{
-						clusterImportanceTable.put(clusterID, wordValueForTheDocument);
-					}
-					currentNodeInGraph.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(clusterImportanceTable));
-					nodeIndex.add(currentNodeInGraph, Neo4jNode.WORD_PROPERTY, currentWord.getContent());
-					// end updating cluster similarity table for the nodes
-					
-					// update the edges
-					if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
-						String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
-						Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
-						Hashtable<String, Double> clusterImportanceTableForEdge  = (Hashtable<String, Double>) deserializeObject((byte[]) edge.getProperty("cluster_table")); 
-						if(clusterImportanceTableForEdge.containsKey(clusterID)){
-							clusterImportanceTableForEdge.put(clusterID, clusterImportanceTableForEdge.get(clusterID)+1);
-						}else{
-							clusterImportanceTableForEdge.put(clusterID, 1.0);
-						}
-						edge.setProperty("cluster_table", serializeObject(clusterImportanceTableForEdge));
-						edgesIndex.add(edge, "edge", edgeID);
-					}
-					// end update the edges
-					previousNodeInTheGraph = currentNodeInGraph;
-					previousWord = currentWord;
-				} // end loop for the words
-			}// end loop for the sentences
-			tx.success();
-		} finally {
-			tx.finish();
-		}
-	}
-	
 	public double calculateWordValue(Document doc, Word word){
 		double wordValue = 0;
 		if (word.getIsTitle()){
-			wordValue = 1/doc.getNumberOfTitleWords();
+			wordValue = 1.0/doc.getNumberOfTitleWords();
 		}else{
-			wordValue = 1/doc.getNumberOfBodyWords();
+			wordValue = 1.0/doc.getNumberOfBodyWords();
 		}
 		return wordValue;
 	}
@@ -259,5 +139,134 @@ public class CIG {
 }
 
 
+	
+	public String getClosestCluster(Document doc, Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges ){
+	
+	
+		return "";
+	}
+	
+	public void updateTheGraph(Document doc, String clusterID) throws Exception{
+
+			ArrayList<Sentence> sentencesList = doc.getSentences();
+			for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
+				Sentence currentSentence = sentencesList.get(sentenceIndex);
+				ArrayList<Word> currentSentenceWords = currentSentence.getWords();
+				//Loop for the words of the current sentence
+				Word previousWord = null;
+				Word currentWord = null;
+				Node previousNodeInTheGraph = null;
+				Node currentNodeInGraph = null;
+				for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
+				  currentWord = currentSentenceWords.get(wordIndex);
+				  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
+					double wordValueForTheDocument = calculateWordValue(doc, currentWord);
+					// update the cluster similarity table for the nodes
+					Hashtable<String, Double> clusterImportanceTable = (Hashtable<String, Double>) deserializeObject((byte[]) currentNodeInGraph.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)); 
+					if (clusterImportanceTable.containsKey(clusterID)){
+						clusterImportanceTable.put(clusterID, clusterImportanceTable.get(clusterID)+wordValueForTheDocument);
+					}else{
+						clusterImportanceTable.put(clusterID, wordValueForTheDocument);
+					}
+					currentNodeInGraph.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(clusterImportanceTable));
+					nodeIndex.add(currentNodeInGraph, Neo4jNode.WORD_PROPERTY, currentWord.getContent());
+					// end updating cluster similarity table for the nodes
+					
+					// update the edges
+					if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
+						String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
+						Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
+						Hashtable<String, Double> clusterImportanceTableForEdge  = (Hashtable<String, Double>) deserializeObject((byte[]) edge.getProperty("cluster_table")); 
+						if(clusterImportanceTableForEdge.containsKey(clusterID)){
+							clusterImportanceTableForEdge.put(clusterID, clusterImportanceTableForEdge.get(clusterID)+1);
+						}else{
+							clusterImportanceTableForEdge.put(clusterID, 1.0);
+						}
+						edge.setProperty("cluster_table", serializeObject(clusterImportanceTableForEdge));
+						edgesIndex.add(edge, "edge", edgeID);
+					}
+					// end update the edges
+					previousNodeInTheGraph = currentNodeInGraph;
+					previousWord = currentWord;
+				} // end loop for the words
+			}// end loop for the sentences
+	}
+	
+	
+	public void clusterDocument(Document doc) throws Exception{
+		Transaction tx = graphDb.beginTx();
+		try {
+
+		ArrayList<Sentence> sentencesList = doc.getSentences();
+		// these tables will be used to calculate the similarity between the new document and existing cluster
+		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
+		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
+		//
+		//Loop for each sentence of the document
+		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
+			Sentence currentSentence = sentencesList.get(sentenceIndex);
+			ArrayList<Word> currentSentenceWords = currentSentence.getWords();
+			//Loop for the words of the current sentence
+			Word previousWord = null;
+			Word currentWord = null;
+			Node previousNodeInTheGraph = null;
+			Node currentNodeInGraph = null;
+			for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
+			  currentWord = currentSentenceWords.get(wordIndex);
+			  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
+				double wordValueForTheDocument = calculateWordValue(doc, currentWord);
+				// start handling the word
+				if(currentNodeInGraph != null){ // currentWord exists in the graph
+					updateWordsClusterImportanceTable(clusterSimilairtyTableForWords, currentNodeInGraph, wordValueForTheDocument);
+				}else{ // currentWord is a new word 
+					currentNodeInGraph = createNewWord(currentWord);
+				}
+				// done handling the nodes
+				// start handling the edges
+				if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
+					String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
+					Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
+					if(edge !=  null){ //edge exists
+						updateEdgesClusterImportanceTable(clusterSimilairtyTableForEdges, edge, 1);
+					}else{ // create new edge
+						createNewEdge(previousNodeInTheGraph, currentNodeInGraph, edgeID);
+					}
+				}
+				// done handling the edges
+				previousNodeInTheGraph = currentNodeInGraph;
+				previousWord = currentWord;
+			}// end loop for words of the current sentence
+		}// end loop of sentence of the document
+		
+		// Evaluate the document to the matched clusters
+		String closestCluster = getClosestCluster(doc, clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
+		if(closestCluster.equalsIgnoreCase("")){ //create new cluster
+			closestCluster = String.valueOf(clusterCounter);
+			updateTheGraph(doc, closestCluster);
+			Neo4jCluster c = new Neo4jCluster(closestCluster);
+			c.addDcoument(doc.getId());
+			this.clustersList.put(c.getId(), c);
+			this.clusterCounter++;
+		}else{
+			updateTheGraph(doc, closestCluster);
+			Neo4jCluster c = this.clustersList.get(closestCluster);
+			c.addDcoument(doc.getId());
+		}
+		//Now we need to calculate the similarity to the clusters collected and take the decision
+		
+		
+		tx.success();
+		} finally {
+			tx.finish();
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		CIG cig = new CIG();
+		Document doc = DocumentManager.createDocument("doc1" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		System.out.println(doc.getNumberOfBodyWords());
+		cig.clusterDocument(doc);
+		cig.registerShutdownHook();
+	}
 	
 }
