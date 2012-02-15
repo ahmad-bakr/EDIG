@@ -39,7 +39,7 @@ public class CIG {
 	private Index<Relationship> edgesIndex;
 	private DatasetLoader datasetHandler;
 	private int clusterCounter ;
-	private double similarityThreshold = 0.5;
+	private double similarityThreshold = 0.1;
 	private double alpha = 0.5;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
@@ -239,18 +239,16 @@ public class CIG {
 		String closestCluster = getClosestCluster(doc, clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
 		if(closestCluster.equalsIgnoreCase("")){ //create new cluster
 			closestCluster = String.valueOf(clusterCounter);
-			updateTheGraph(doc, closestCluster);
 			Neo4jCluster c = new Neo4jCluster(closestCluster);
-			c.addDcoument(doc.getId());
 			this.clustersList.put(c.getId(), c);
+			c.addDcoument(doc.getId());
 			this.clusterCounter++;
-		}else{
 			updateTheGraph(doc, closestCluster);
+		}else{
 			Neo4jCluster c = this.clustersList.get(closestCluster);
 			c.addDcoument(doc.getId());
+			updateTheGraph(doc, closestCluster);
 		}
-		
-		
 		tx.success();
 		} finally {
 			tx.finish();
@@ -265,6 +263,7 @@ public class CIG {
 		while (clusterIDs.hasMoreElements()) {
 			String clusterID = (String) clusterIDs.nextElement();
 			double similairty = (alpha * (clusterSimilarityForWords.get(clusterID)/numberOfWords) ) + ( (1-alpha) * (clusterSimilarityForEdges.get(clusterID)/(numberOfWords-1)) ); 
+			System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
 			if (similairty > similarityThreshold && similairty > selectedSimilairty){
 				selectedClusterID = clusterID;
 				selectedSimilairty = similairty;
@@ -277,9 +276,28 @@ public class CIG {
 
 	public static void main(String[] args) throws Exception {
 		CIG cig = new CIG();
-		Document doc = DocumentManager.createDocument("doc1" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		System.out.println(doc.getNumberOfBodyWords());
-		cig.clusterDocument(doc);
+		Document doc1 = DocumentManager.createDocument("doc1" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc2 = DocumentManager.createDocument("doc2" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc3 = DocumentManager.createDocument("doc3" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc4 = DocumentManager.createDocument("doc4" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc5 = DocumentManager.createDocument("doc5" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc6 = DocumentManager.createDocument("doc6" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc7 = DocumentManager.createDocument("doc7" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc8 = DocumentManager.createDocument("doc8" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc9 = DocumentManager.createDocument("doc9" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc10 = DocumentManager.createDocument("doc10" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+
+		cig.clusterDocument(doc1);
+		cig.clusterDocument(doc2);
+		cig.clusterDocument(doc3);
+		cig.clusterDocument(doc4);
+		cig.clusterDocument(doc5);
+		cig.clusterDocument(doc6);
+		cig.clusterDocument(doc7);
+		cig.clusterDocument(doc8);
+		cig.clusterDocument(doc9);
+		cig.clusterDocument(doc10);
+
 		cig.registerShutdownHook();
 	}
 	
