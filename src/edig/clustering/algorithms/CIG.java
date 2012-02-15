@@ -39,6 +39,8 @@ public class CIG {
 	private Index<Relationship> edgesIndex;
 	private DatasetLoader datasetHandler;
 	private int clusterCounter ;
+	private double similarityThreshold = 0.5;
+	private double alpha = 0.5;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
 	public CIG() {
@@ -140,11 +142,6 @@ public class CIG {
 
 
 	
-	public String getClosestCluster(Document doc, Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges ){
-	
-	
-		return "";
-	}
 	
 	public void updateTheGraph(Document doc, String clusterID) throws Exception{
 
@@ -252,7 +249,6 @@ public class CIG {
 			Neo4jCluster c = this.clustersList.get(closestCluster);
 			c.addDcoument(doc.getId());
 		}
-		//Now we need to calculate the similarity to the clusters collected and take the decision
 		
 		
 		tx.success();
@@ -260,6 +256,24 @@ public class CIG {
 			tx.finish();
 		}
 	}
+	
+	public String getClosestCluster(Document doc, Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges){
+		Enumeration clusterIDs = clusterSimilarityForWords.keys();
+		double selectedSimilairty = -1;
+		String selectedClusterID = "";
+		double numberOfWords = doc.getNumberOfTitleWords() + doc.getNumberOfBodyWords();
+		while (clusterIDs.hasMoreElements()) {
+			String clusterID = (String) clusterIDs.nextElement();
+			double similairty = (alpha * (clusterSimilarityForWords.get(clusterID)/numberOfWords) ) + ( (1-alpha) * (clusterSimilarityForEdges.get(clusterID)/(numberOfWords-1)) ); 
+			if (similairty > similarityThreshold && similairty > selectedSimilairty){
+				selectedClusterID = clusterID;
+				selectedSimilairty = similairty;
+			}
+		}
+		
+		return selectedClusterID;
+	}
+
 
 	public static void main(String[] args) throws Exception {
 		CIG cig = new CIG();
