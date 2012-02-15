@@ -64,7 +64,7 @@ public class CIG {
 	public double calculateWordValue(Document doc, Word word){
 		double wordValue = 0;
 		if (word.getIsTitle()){
-			wordValue = 1.0/doc.getNumberOfTitleWords();
+			wordValue = (1.0/doc.getNumberOfTitleWords())*0.5;
 		}else{
 			wordValue = 1.0/doc.getNumberOfBodyWords();
 		}
@@ -144,7 +144,7 @@ public class CIG {
 	
 	
 	public void updateTheGraph(Document doc, String clusterID) throws Exception{
-
+			double numberOfDocumentsInTheCluster = this.clustersList.get(clusterID).getDocumentIDs().size();
 			ArrayList<Sentence> sentencesList = doc.getSentences();
 			for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
 				Sentence currentSentence = sentencesList.get(sentenceIndex);
@@ -157,7 +157,7 @@ public class CIG {
 				for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
 				  currentWord = currentSentenceWords.get(wordIndex);
 				  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
-					double wordValueForTheDocument = calculateWordValue(doc, currentWord);
+					double wordValueForTheDocument = calculateWordValue(doc, currentWord) / numberOfDocumentsInTheCluster;
 					// update the cluster similarity table for the nodes
 					Hashtable<String, Double> clusterImportanceTable = (Hashtable<String, Double>) deserializeObject((byte[]) currentNodeInGraph.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)); 
 					if (clusterImportanceTable.containsKey(clusterID)){
