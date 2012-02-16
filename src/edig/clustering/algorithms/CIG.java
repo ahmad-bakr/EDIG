@@ -199,6 +199,7 @@ public class CIG {
 		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
 		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
 		double documentMagnitude = 0.0;
+		double edgesMagnitude = 0.0;
 		int numberOfEgdesOfDocument = 0;
 		//
 		//Loop for each sentence of the document
@@ -225,6 +226,7 @@ public class CIG {
 				// start handling the edges
 				if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
 					numberOfEgdesOfDocument++;
+					edgesMagnitude++;
 					String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
 					Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
 					if(edge !=  null){ //edge exists
@@ -245,6 +247,7 @@ public class CIG {
 			closestCluster = String.valueOf(clusterCounter);
 			Neo4jCluster c = new Neo4jCluster(closestCluster);
 			c.incrementMagnitude(documentMagnitude);
+			c.incrementEdgesMagnitude(edgesMagnitude);
 			this.clustersList.put(c.getId(), c);
 			c.addDcoument(doc.getId());
 			this.clusterCounter++;
@@ -252,6 +255,7 @@ public class CIG {
 		}else{
 			Neo4jCluster c = this.clustersList.get(closestCluster);
 			c.incrementMagnitude(documentMagnitude);
+			c.incrementEdgesMagnitude(edgesMagnitude);
 			c.addDcoument(doc.getId());
 			updateTheGraph(doc, closestCluster);
 		}
@@ -270,10 +274,11 @@ public class CIG {
 			Neo4jCluster cluster = clustersList.get(clusterID);
 			System.out.println("check document "+doc.getId()+ " to cluster "+ clusterID);	
 			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) * Math.sqrt(cluster.getMagnitude()))  ); 
+			System.out.println(wordsWeight);
 			double edgesWeight = 0.0;
 			if (clusterSimilarityForEdges.containsKey(clusterID)){
 				double overlapping = clusterSimilarityForEdges.get(clusterID);
-				edgesWeight =	(1-alpha) * (overlapping/(numberOfEdgesOfDocument + cluster.getLength() - overlapping ));
+				//edgesWeight =	(1-alpha) * (overlapping/(numberOfEdgesOfDocument + cluster.getLength() - overlapping ));
 				System.out.println(edgesWeight);
 			}
 			double similairty = wordsWeight + edgesWeight ; 
@@ -304,9 +309,9 @@ public class CIG {
 		cig.clusterDocument(doc1);
 		cig.clusterDocument(doc2);
 		cig.clusterDocument(doc3);
-	//	cig.clusterDocument(doc4);
-	//	cig.clusterDocument(doc5);
-	//	cig.clusterDocument(doc6);
+		cig.clusterDocument(doc4);
+		cig.clusterDocument(doc5);
+		cig.clusterDocument(doc6);
 	//	cig.clusterDocument(doc7);
 	//	cig.clusterDocument(doc8);
 	//	cig.clusterDocument(doc9);

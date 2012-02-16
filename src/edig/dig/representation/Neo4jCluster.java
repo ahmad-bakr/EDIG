@@ -14,6 +14,7 @@ public class Neo4jCluster {
 	ArrayList<String> documentIDs;
 	String id;
 	double magnitude;
+	double edgesMagnitude;
 	double length;
 	
 	public Neo4jCluster(String id) {
@@ -21,10 +22,15 @@ public class Neo4jCluster {
 		this.documentIDs = new ArrayList<String>();
 		this.magnitude =0;
 		this.length =0;
+		this.edgesMagnitude =0;
 	}
 	
 	public String getId() {
 		return id;
+	}
+	
+	public void incrementEdgesMagnitude(double value){
+		this.edgesMagnitude+= value;
 	}
 	
 	
