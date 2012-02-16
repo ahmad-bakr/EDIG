@@ -13,10 +13,12 @@ import edig.entites.Document;
 public class Neo4jCluster {
 	ArrayList<String> documentIDs;
 	String id;
+	double magnitude;
 	
 	public Neo4jCluster(String id) {
 		this.id = id;
 		this.documentIDs = new ArrayList<String>();
+		this.magnitude =0;
 	}
 	
 	public String getId() {
@@ -26,6 +28,14 @@ public class Neo4jCluster {
 	
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public void incrementMagnitude(double value){
+		this.magnitude += value;
+	}
+	
+	public double getMagnitude() {
+		return magnitude;
 	}
 	
 	/**

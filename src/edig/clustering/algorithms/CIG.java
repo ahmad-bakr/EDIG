@@ -39,7 +39,7 @@ public class CIG {
 	private Index<Relationship> edgesIndex;
 	private DatasetLoader datasetHandler;
 	private int clusterCounter ;
-	private double similarityThreshold = 0.1;
+	private double similarityThreshold = 0.5;
 	private double alpha = 0.5;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
@@ -198,6 +198,7 @@ public class CIG {
 		// these tables will be used to calculate the similarity between the new document and existing cluster
 		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
 		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
+		double documentMagnitude = 0.0;
 		//
 		//Loop for each sentence of the document
 		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
@@ -212,6 +213,7 @@ public class CIG {
 			  currentWord = currentSentenceWords.get(wordIndex);
 			  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
 				double wordValueForTheDocument = calculateWordValue(doc, currentWord);
+				documentMagnitude +=  Math.pow(wordValueForTheDocument, 2);
 				// start handling the word
 				if(currentNodeInGraph != null){ // currentWord exists in the graph
 					updateWordsClusterImportanceTable(clusterSimilairtyTableForWords, currentNodeInGraph, wordValueForTheDocument);
@@ -236,16 +238,18 @@ public class CIG {
 		}// end loop of sentence of the document
 		
 		// Evaluate the document to the matched clusters
-		String closestCluster = getClosestCluster(doc, clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
+		String closestCluster = getClosestCluster(doc, documentMagnitude ,clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
 		if(closestCluster.equalsIgnoreCase("")){ //create new cluster
 			closestCluster = String.valueOf(clusterCounter);
 			Neo4jCluster c = new Neo4jCluster(closestCluster);
+			c.incrementMagnitude(documentMagnitude);
 			this.clustersList.put(c.getId(), c);
 			c.addDcoument(doc.getId());
 			this.clusterCounter++;
 			updateTheGraph(doc, closestCluster);
 		}else{
 			Neo4jCluster c = this.clustersList.get(closestCluster);
+			c.incrementMagnitude(documentMagnitude);
 			c.addDcoument(doc.getId());
 			updateTheGraph(doc, closestCluster);
 		}
@@ -255,14 +259,21 @@ public class CIG {
 		}
 	}
 	
-	public String getClosestCluster(Document doc, Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges){
+	public String getClosestCluster(Document doc, double documentMagnitude ,Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges){
 		Enumeration clusterIDs = clusterSimilarityForWords.keys();
 		double selectedSimilairty = -1;
 		String selectedClusterID = "";
 		double numberOfWords = doc.getNumberOfTitleWords() + doc.getNumberOfBodyWords();
 		while (clusterIDs.hasMoreElements()) {
 			String clusterID = (String) clusterIDs.nextElement();
-			double similairty = (alpha * (clusterSimilarityForWords.get(clusterID)/numberOfWords) ) + ( (1-alpha) * (clusterSimilarityForEdges.get(clusterID)/(numberOfWords-1)) ); 
+
+			System.out.println("check document "+doc.getId()+ " to cluster "+ clusterID);	
+			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) * Math.sqrt(clustersList.get(clusterID).getMagnitude()))  ); 
+			double edgesWeight = 0.0;
+			if (clusterSimilarityForEdges.containsKey(clusterID)){
+				edgesWeight = ( (1-alpha) * (clusterSimilarityForEdges.get(clusterID)/(numberOfWords-1)) );
+			}
+			double similairty = wordsWeight + edgesWeight ; 
 			System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
 			if (similairty > similarityThreshold && similairty > selectedSimilairty){
 				selectedClusterID = clusterID;
@@ -280,7 +291,7 @@ public class CIG {
 		Document doc2 = DocumentManager.createDocument("doc2" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
 		Document doc3 = DocumentManager.createDocument("doc3" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
 		Document doc4 = DocumentManager.createDocument("doc4" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc5 = DocumentManager.createDocument("doc5" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc5 = DocumentManager.createDocument("doc5" ,"Hello, This is new document 5.", "new document 5");
 		Document doc6 = DocumentManager.createDocument("doc6" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
 		Document doc7 = DocumentManager.createDocument("doc7" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
 		Document doc8 = DocumentManager.createDocument("doc8" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
