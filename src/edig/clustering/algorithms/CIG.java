@@ -77,11 +77,11 @@ public class CIG {
 		//loop for all clusters in the node and update the cluster similarity table for the document
 		while (clustersIDs.hasMoreElements()) {
 			String clusterID = (String) clustersIDs.nextElement();
+			double wordValueForTheCluster = clusterImportanceTable.get(clusterID) * wordValue;
 			if(clusterSimilairtyTableForWords.containsKey(clusterID)){
-				double wordValueForTheCluster = clusterImportanceTable.get(clusterID);
-				clusterSimilairtyTableForWords.put(clusterID, wordValueForTheCluster+wordValue);
+				clusterSimilairtyTableForWords.put(clusterID, wordValueForTheCluster+clusterSimilairtyTableForWords.get(clusterID));
 			}else{
-				clusterSimilairtyTableForWords.put(clusterID, wordValue);
+				clusterSimilairtyTableForWords.put(clusterID, wordValueForTheCluster);
 			}
 		}// end loop for clusters at the matched node
 	}
@@ -92,11 +92,11 @@ public class CIG {
 		//loop for all clusters in the node and update the cluster similarity table for the document
 		while (clustersIDs.hasMoreElements()) {
 			String clusterID = (String) clustersIDs.nextElement();
+			double edgeValueForTheCluster = clusterImportanceTable.get(clusterID) * edgeValueInTheDocument;
 			if(clusterSimilairtyTableForEdges.containsKey(clusterID)){
-				double edgeValueForTheCluster = clusterImportanceTable.get(clusterID);
-				clusterSimilairtyTableForEdges.put(clusterID, edgeValueForTheCluster + edgeValueInTheDocument);
+				clusterSimilairtyTableForEdges.put(clusterID, edgeValueForTheCluster + clusterSimilairtyTableForEdges.get(clusterID));
 			}else{
-				clusterSimilairtyTableForEdges.put(clusterID, edgeValueInTheDocument);
+				clusterSimilairtyTableForEdges.put(clusterID, edgeValueForTheCluster);
 			}
 		}// end loop for clusters at the matched node
 	}
@@ -273,6 +273,7 @@ public class CIG {
 			if (clusterSimilarityForEdges.containsKey(clusterID)){
 				double overlapping = clusterSimilarityForEdges.get(clusterID);
 				edgesWeight =	(1-alpha) * (overlapping/(numberOfWords + cluster.getLength() - overlapping -1));
+				System.out.println(edgesWeight);
 			}
 			double similairty = wordsWeight + edgesWeight ; 
 			System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
@@ -290,7 +291,7 @@ public class CIG {
 		CIG cig = new CIG();
 		Document doc1 = DocumentManager.createDocument("doc1" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
 		Document doc2 = DocumentManager.createDocument("doc2" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc3 = DocumentManager.createDocument("doc3" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
+		Document doc3 = DocumentManager.createDocument("doc3" ,", This Ahmad is Hello title.  Bakr", ", This is body. Hello is going?");
 		Document doc4 = DocumentManager.createDocument("doc4" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
 		Document doc5 = DocumentManager.createDocument("doc5" ,"Hello, This is new document 5.", "new document 5");
 		Document doc6 = DocumentManager.createDocument("doc6" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
@@ -302,13 +303,13 @@ public class CIG {
 		cig.clusterDocument(doc1);
 		cig.clusterDocument(doc2);
 		cig.clusterDocument(doc3);
-		cig.clusterDocument(doc4);
-		cig.clusterDocument(doc5);
-		cig.clusterDocument(doc6);
-		cig.clusterDocument(doc7);
-		cig.clusterDocument(doc8);
-		cig.clusterDocument(doc9);
-		cig.clusterDocument(doc10);
+	//	cig.clusterDocument(doc4);
+	//	cig.clusterDocument(doc5);
+	//	cig.clusterDocument(doc6);
+	//	cig.clusterDocument(doc7);
+	//	cig.clusterDocument(doc8);
+	//	cig.clusterDocument(doc9);
+	//	cig.clusterDocument(doc10);
 
 		cig.registerShutdownHook();
 	}
