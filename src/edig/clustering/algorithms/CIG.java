@@ -141,9 +141,8 @@ public class CIG {
 }
 
 
-	
-	
 	public void updateTheGraph(Document doc, String clusterID) throws Exception{
+		  Neo4jCluster cluster = this.clustersList.get(clusterID);
 			double numberOfDocumentsInTheCluster = this.clustersList.get(clusterID).getDocumentIDs().size();
 			ArrayList<Sentence> sentencesList = doc.getSentences();
 			for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
@@ -178,6 +177,7 @@ public class CIG {
 							clusterImportanceTableForEdge.put(clusterID, clusterImportanceTableForEdge.get(clusterID)+1);
 						}else{
 							clusterImportanceTableForEdge.put(clusterID, 1.0);
+							cluster.incrementLength(1);
 						}
 						edge.setProperty("cluster_table", serializeObject(clusterImportanceTableForEdge));
 						edgesIndex.add(edge, "edge", edgeID);
@@ -266,12 +266,13 @@ public class CIG {
 		double numberOfWords = doc.getNumberOfTitleWords() + doc.getNumberOfBodyWords();
 		while (clusterIDs.hasMoreElements()) {
 			String clusterID = (String) clusterIDs.nextElement();
-
+			Neo4jCluster cluster = clustersList.get(clusterID);
 			System.out.println("check document "+doc.getId()+ " to cluster "+ clusterID);	
-			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) * Math.sqrt(clustersList.get(clusterID).getMagnitude()))  ); 
+			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) * Math.sqrt(cluster.getMagnitude()))  ); 
 			double edgesWeight = 0.0;
 			if (clusterSimilarityForEdges.containsKey(clusterID)){
-				edgesWeight = ( (1-alpha) * (clusterSimilarityForEdges.get(clusterID)/(numberOfWords-1)) );
+				double overlapping = clusterSimilarityForEdges.get(clusterID);
+				edgesWeight =	(1-alpha) * (overlapping/(numberOfWords + cluster.getLength() - overlapping -1));
 			}
 			double similairty = wordsWeight + edgesWeight ; 
 			System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
