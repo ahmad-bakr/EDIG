@@ -199,6 +199,7 @@ public class CIG {
 		Hashtable<String, Double> clusterSimilairtyTableForWords = new Hashtable<String, Double>();
 		Hashtable<String, Double> clusterSimilairtyTableForEdges = new Hashtable<String, Double>();
 		double documentMagnitude = 0.0;
+		int numberOfEgdesOfDocument = 0;
 		//
 		//Loop for each sentence of the document
 		for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
@@ -223,6 +224,7 @@ public class CIG {
 				// done handling the nodes
 				// start handling the edges
 				if((previousNodeInTheGraph != null) && (currentNodeInGraph != null)){
+					numberOfEgdesOfDocument++;
 					String edgeID = previousWord.getContent()+"_"+currentWord.getContent();
 					Relationship edge = edgesIndex.get("edge", edgeID).getSingle();
 					if(edge !=  null){ //edge exists
@@ -238,7 +240,7 @@ public class CIG {
 		}// end loop of sentence of the document
 		
 		// Evaluate the document to the matched clusters
-		String closestCluster = getClosestCluster(doc, documentMagnitude ,clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
+		String closestCluster = getClosestCluster(doc, documentMagnitude, numberOfEgdesOfDocument ,clusterSimilairtyTableForWords, clusterSimilairtyTableForEdges);
 		if(closestCluster.equalsIgnoreCase("")){ //create new cluster
 			closestCluster = String.valueOf(clusterCounter);
 			Neo4jCluster c = new Neo4jCluster(closestCluster);
@@ -259,11 +261,10 @@ public class CIG {
 		}
 	}
 	
-	public String getClosestCluster(Document doc, double documentMagnitude ,Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges){
+	public String getClosestCluster(Document doc, double documentMagnitude, int numberOfEdgesOfDocument ,Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges){
 		Enumeration clusterIDs = clusterSimilarityForWords.keys();
 		double selectedSimilairty = -1;
 		String selectedClusterID = "";
-		double numberOfWords = doc.getNumberOfTitleWords() + doc.getNumberOfBodyWords();
 		while (clusterIDs.hasMoreElements()) {
 			String clusterID = (String) clusterIDs.nextElement();
 			Neo4jCluster cluster = clustersList.get(clusterID);
@@ -272,7 +273,7 @@ public class CIG {
 			double edgesWeight = 0.0;
 			if (clusterSimilarityForEdges.containsKey(clusterID)){
 				double overlapping = clusterSimilarityForEdges.get(clusterID);
-				edgesWeight =	(1-alpha) * (overlapping/(numberOfWords + cluster.getLength() - overlapping -1));
+				edgesWeight =	(1-alpha) * (overlapping/(numberOfEdgesOfDocument + cluster.getLength() - overlapping ));
 				System.out.println(edgesWeight);
 			}
 			double similairty = wordsWeight + edgesWeight ; 
