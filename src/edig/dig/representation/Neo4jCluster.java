@@ -33,6 +33,10 @@ public class Neo4jCluster {
 		this.edgesMagnitude+= value;
 	}
 	
+	public double getEdgesMagnitude() {
+		return edgesMagnitude;
+	}
+	
 	
 	public void setId(String id) {
 		this.id = id;
