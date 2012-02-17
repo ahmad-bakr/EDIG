@@ -31,6 +31,7 @@ import edig.entites.Document;
 import edig.entites.DocumentManager;
 import edig.entites.Sentence;
 import edig.entites.Word;
+import edig.evaluations.CIGMeasure;
 
 public class CIG {
 
@@ -39,7 +40,7 @@ public class CIG {
 	private Index<Relationship> edgesIndex;
 	private DatasetLoader datasetHandler;
 	private int clusterCounter ;
-	private double similarityThreshold = 0.8;
+	private double similarityThreshold = 0.5;
 	private double alpha = 0.5;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
@@ -52,6 +53,9 @@ public class CIG {
 		this.datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 	}
 	
+	public Hashtable<String, Neo4jCluster> getClustersList() {
+		return clustersList;
+	}
 	public DatasetLoader getDatasetHandler() {
 		return datasetHandler;
 	}
@@ -276,18 +280,18 @@ public class CIG {
 		while (clusterIDs.hasMoreElements()) {
 			String clusterID = (String) clusterIDs.nextElement();
 			Neo4jCluster cluster = clustersList.get(clusterID);
-			System.out.println("check document "+doc.getId()+ " to cluster "+ clusterID);	
+		//	System.out.println("check document "+doc.getId()+ " to cluster "+ clusterID);	
 			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) + Math.sqrt(cluster.getMagnitude()))  ); 
 		
 			double edgesWeight = 0.0;
 			if (clusterSimilarityForEdges.containsKey(clusterID)){
 				double overlapping = clusterSimilarityForEdges.get(clusterID);
 				edgesWeight = overlapping/(numberOfEdgesOfDocument + cluster.getEdgesMagnitude());
-				System.out.println("edges ="+edgesWeight);
+			//	System.out.println("edges ="+edgesWeight);
 			}
-			System.out.println("words ="+wordsWeight);
+	//		System.out.println("words ="+wordsWeight);
 			double similairty = wordsWeight + edgesWeight ; 
-			System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
+	//		System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
 			if (similairty > similarityThreshold && similairty > selectedSimilairty){
 				selectedClusterID = clusterID;
 				selectedSimilairty = similairty;
@@ -304,8 +308,19 @@ public class CIG {
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		datasetHandler.loadDocuments();
 		ArrayList<String> documentsIDs = datasetHandler.getDocumentsIDS();
-		
+		for (int i = 0; i < documentsIDs.size(); i++) {
+			Document d = datasetHandler.getDocument(documentsIDs.get(i));
+			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
+			cig.clusterDocument(d);
+		}
 		cig.registerShutdownHook();
+		CIGMeasure measure = new CIGMeasure();
+		measure.calculate(cig.getClustersList(), datasetHandler);
+		System.out.println("*********************************************************");
+		System.out.println("Precision = "+ measure.getPrecision());
+		System.out.println("Recall = "+ measure.getRecall());
+		System.out.println("F-Measure = "+ measure.getFmeasure());
+		System.out.println("*********************************************************");
 	}
 	
 }
