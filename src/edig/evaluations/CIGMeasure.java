@@ -23,7 +23,7 @@ public class CIGMeasure {
 	}
 
 	public double getFmeasure() {
-		return fmeasure;
+		return (2.0*this.precision*this.recall)/(this.precision+this.recall);
 	}
 	
 	public double getPrecision() {
@@ -52,6 +52,10 @@ public class CIGMeasure {
 			this.recall += values[1] * datasetHandler.getNumberOfDocumentsInClass(className) ;
 			this.precision += values[0] * datasetHandler.getNumberOfDocumentsInClass(className);
 		}
+
+		this.fmeasure = (this.fmeasure*1.0)/datasetHandler.numberOfDocuments();
+		this.precision = (this.precision*1.0)/datasetHandler.numberOfDocuments();
+		this.recall = (this.recall*1.0)/datasetHandler.numberOfDocuments();
 
 
 	}

@@ -40,17 +40,27 @@ public class CIG {
 	private Index<Relationship> edgesIndex;
 	private DatasetLoader datasetHandler;
 	private int clusterCounter ;
-	private double similarityThreshold = 0.5;
-	private double alpha = 0.5;
+	private double similarityThreshold ;
+	private double alpha ;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
-	public CIG() {
+	public CIG(double alpha, double simThreshold) {
+		this.alpha = alpha;
+		this.similarityThreshold = simThreshold;
 		this.clustersList = new Hashtable<String,Neo4jCluster>();
 		this.clusterCounter = 1;
 		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/EDIG");
 		this.nodeIndex = graphDb.index().forNodes("nodes");
 		this.edgesIndex = graphDb.index().forRelationships("relationships");
 		this.datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+	}
+	
+	public double getAlpha() {
+		return alpha;
+	}
+	
+	public double getSimilarityThreshold() {
+		return similarityThreshold;
 	}
 	
 	public Hashtable<String, Neo4jCluster> getClustersList() {
@@ -303,23 +313,27 @@ public class CIG {
 
 
 	public static void main(String[] args) throws Exception {
-
-		CIG cig = new CIG();
+		double alpha = 0.9;
+		double similairtyThreshold = 0.4;
+		CIG cig = new CIG(alpha, similairtyThreshold);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		datasetHandler.loadDocuments();
+		long startTime = System.currentTimeMillis();
 		ArrayList<String> documentsIDs = datasetHandler.getDocumentsIDS();
 		for (int i = 0; i < documentsIDs.size(); i++) {
 			Document d = datasetHandler.getDocument(documentsIDs.get(i));
 			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
 			cig.clusterDocument(d);
 		}
+		long endTime = System.currentTimeMillis();
 		cig.registerShutdownHook();
 		CIGMeasure measure = new CIGMeasure();
 		measure.calculate(cig.getClustersList(), datasetHandler);
 		System.out.println("*********************************************************");
+		System.out.println("F-Measure = "+ measure.getFmeasure());
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
-		System.out.println("F-Measure = "+ measure.getFmeasure());
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
 		System.out.println("*********************************************************");
 	}
 	

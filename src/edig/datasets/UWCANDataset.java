@@ -56,8 +56,8 @@ public class UWCANDataset implements DatasetLoader {
     		String documentName = docsInCategory[j];
     		File input = new File(this.datasetPath+"/"+categoryName+"/"+documentName);
     		org.jsoup.nodes.Document doc = Jsoup.parse(input, "UTF-8", "");
-    		String title = doc.head().text().replaceAll("(\\r|\\n)", ". ");;
-				String body = doc.body().text().replaceAll("(\\r|\\n)", ". ");;
+    		String title = categoryName+" "+ doc.head().text().replaceAll("(\\r|\\n)", ". ");
+				String body = getFirstNWords(doc.body().text().replaceAll("(\\r|\\n)", ". "));
 				Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
 				stemmedDocument.setOrginalCluster(categoryName);
 				this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
@@ -72,6 +72,17 @@ public class UWCANDataset implements DatasetLoader {
 		return this.documentHash.get(documentID);
 	}
 	
+	private String getFirstNWords(String s){
+		String [] arr = s.split(" ");
+		String str = "";
+		for (int i = 0; i < 200; i++) {
+			if (i >= arr.length) break;
+			str += arr[i];
+		}
+		
+		return str;
+	}
+	
 	@Override
 	public int numberOfDocuments() {
 		return this.numberOfDocument;
@@ -79,20 +90,19 @@ public class UWCANDataset implements DatasetLoader {
 
 
 	public static void main(String[] args) throws Exception {
-		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
-		Hashtable<String, Document> docsHash = dataset.loadDocuments();
-		Enumeration e = docsHash.keys();
-		Document doc = docsHash.get(e.nextElement());
-		System.out.println(doc.getOrginalCluster()+ "  "+ doc.getId());
-		System.out.println("********************");
-		for (int i = 0; i < doc.getSentences().size(); i++) {
-			for (int j = 0; j < doc.getSentences().get(i).getWords().size(); j++) {
-				System.out.print(doc.getSentences().get(i).getWords().get(j).getContent() + " ");
-			}
-			System.out.println("");
-		} 
-
-
+//		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+//		Hashtable<String, Document> docsHash = dataset.loadDocuments();
+//		Enumeration e = docsHash.keys();
+//		Document doc = docsHash.get(e.nextElement());
+//		System.out.println(doc.getOrginalCluster()+ "  "+ doc.getId());
+//		System.out.println("********************");
+//		for (int i = 0; i < doc.getSentences().size(); i++) {
+//			for (int j = 0; j < doc.getSentences().get(i).getWords().size(); j++) {
+//				System.out.print(doc.getSentences().get(i).getWords().get(j).getContent() + " ");
+//			}
+//			System.out.println("");
+//		}
+		
 	}
 
 
