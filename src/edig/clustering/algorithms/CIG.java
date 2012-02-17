@@ -39,7 +39,7 @@ public class CIG {
 	private Index<Relationship> edgesIndex;
 	private DatasetLoader datasetHandler;
 	private int clusterCounter ;
-	private double similarityThreshold = 0.5;
+	private double similarityThreshold = 0.8;
 	private double alpha = 0.5;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
@@ -50,6 +50,10 @@ public class CIG {
 		this.nodeIndex = graphDb.index().forNodes("nodes");
 		this.edgesIndex = graphDb.index().forRelationships("relationships");
 		this.datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+	}
+	
+	public DatasetLoader getDatasetHandler() {
+		return datasetHandler;
 	}
 	
 	public void registerShutdownHook() {
@@ -273,13 +277,12 @@ public class CIG {
 			String clusterID = (String) clusterIDs.nextElement();
 			Neo4jCluster cluster = clustersList.get(clusterID);
 			System.out.println("check document "+doc.getId()+ " to cluster "+ clusterID);	
-			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) * Math.sqrt(cluster.getMagnitude()))  ); 
+			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) + Math.sqrt(cluster.getMagnitude()))  ); 
 		
 			double edgesWeight = 0.0;
 			if (clusterSimilarityForEdges.containsKey(clusterID)){
 				double overlapping = clusterSimilarityForEdges.get(clusterID);
-				edgesWeight = overlapping/(numberOfEdgesOfDocument * cluster.getEdgesMagnitude());
-				//edgesWeight =	(1-alpha) * (overlapping/(numberOfEdgesOfDocument + cluster.getLength() - overlapping ));
+				edgesWeight = overlapping/(numberOfEdgesOfDocument + cluster.getEdgesMagnitude());
 				System.out.println("edges ="+edgesWeight);
 			}
 			System.out.println("words ="+wordsWeight);
@@ -296,49 +299,12 @@ public class CIG {
 
 
 	public static void main(String[] args) throws Exception {
+
 		CIG cig = new CIG();
-		Document doc1 = DocumentManager.createDocument("doc1" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc2 = DocumentManager.createDocument("doc2" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc3 = DocumentManager.createDocument("doc3" ,", This Ahmad is Hello title.  Bakr", ", This is body. Hello is going?");
-		Document doc4 = DocumentManager.createDocument("doc4" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc5 = DocumentManager.createDocument("doc5" ,"Hello, This is new document 5.", "new document 5");
-		Document doc6 = DocumentManager.createDocument("doc6" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc7 = DocumentManager.createDocument("doc7" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc8 = DocumentManager.createDocument("doc8" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc9 = DocumentManager.createDocument("doc9" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc10 = DocumentManager.createDocument("doc10" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc11 = DocumentManager.createDocument("doc11" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc12 = DocumentManager.createDocument("doc12" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc13 = DocumentManager.createDocument("doc13" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc14 = DocumentManager.createDocument("doc14" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc15 = DocumentManager.createDocument("doc15" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc16 = DocumentManager.createDocument("doc16" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc17 = DocumentManager.createDocument("doc17" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc18 = DocumentManager.createDocument("doc18" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc19 = DocumentManager.createDocument("doc19" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-		Document doc20 = DocumentManager.createDocument("doc20" ,"Hello, This is title. Ahmad Bakr", "Hello, This is body. How is going?");
-
-		cig.clusterDocument(doc1);
-		cig.clusterDocument(doc2);
-		cig.clusterDocument(doc3);
-		cig.clusterDocument(doc4);
-		cig.clusterDocument(doc5);
-		cig.clusterDocument(doc6);
-		cig.clusterDocument(doc7);
-		cig.clusterDocument(doc8);
-		cig.clusterDocument(doc9);
-		cig.clusterDocument(doc10);
-		cig.clusterDocument(doc11);
-
-		cig.clusterDocument(doc12);
-		cig.clusterDocument(doc13);
-		cig.clusterDocument(doc14);
-		cig.clusterDocument(doc15);
-		cig.clusterDocument(doc16);
-		cig.clusterDocument(doc17);
-		cig.clusterDocument(doc18);
-		cig.clusterDocument(doc19);
-		cig.clusterDocument(doc20);
+		DatasetLoader datasetHandler = cig.getDatasetHandler();
+		datasetHandler.loadDocuments();
+		ArrayList<String> documentsIDs = datasetHandler.getDocumentsIDS();
+		
 		cig.registerShutdownHook();
 	}
 	

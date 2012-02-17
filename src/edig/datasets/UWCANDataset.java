@@ -14,8 +14,10 @@ public class UWCANDataset implements DatasetLoader {
 	private int numberOfDocument;
 	private ArrayList<String> originalClasses ;
 	private Hashtable<String, Integer> classDocumentCount;
+	private ArrayList<String> documentsIDS;
 	
 	public UWCANDataset(String path) {
+		this.documentsIDS = new ArrayList<String>();
 		this.originalClasses = new ArrayList<String>();
 		this.datasetPath = path;
 		this.documentHash = new Hashtable<String, Document>();
@@ -26,6 +28,11 @@ public class UWCANDataset implements DatasetLoader {
 	@Override
 	public ArrayList<String> getOriginalClasses() {
 		return this.originalClasses;
+	}
+	
+	@Override	
+	public ArrayList<String> getDocumentsIDS() {
+		return documentsIDS;
 	}
 
 	@Override
@@ -54,6 +61,7 @@ public class UWCANDataset implements DatasetLoader {
 				Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
 				stemmedDocument.setOrginalCluster(categoryName);
 				this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
+				this.documentsIDS.add(stemmedDocument.getId());
 			}// end loop over documents
 		}// end loop over categories
 		return this.documentHash;
