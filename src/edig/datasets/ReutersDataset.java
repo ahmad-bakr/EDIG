@@ -96,7 +96,7 @@ public class ReutersDataset extends Dataset{
 	private String getFirstNWords(String s){
 		String [] arr = s.split(" ");
 		String str = "";
-		for (int i = 0; i < 200; i++) {
+		for (int i = 0; i < 250; i++) {
 			if (i >= arr.length) break;
 			str += arr[i];
 		}

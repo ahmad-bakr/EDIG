@@ -24,6 +24,7 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import edig.datasets.DatasetLoader;
 import edig.datasets.NewsGroupDataset;
+import edig.datasets.ReutersDataset;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
@@ -331,20 +332,27 @@ public class CIG {
 
 	public static void run(double alpha, double similairtyThreshold) throws Exception{
 		CIG.deleteDir(new File("/media/disk/master/Noe4j/EDIG"));
-		NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
+		//NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
+		ReutersDataset dataset = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
 		CIG cig = new CIG(alpha, similairtyThreshold, dataset);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
 		long startTime = System.currentTimeMillis();
-		ArrayList<String> documentsIDs = datasetHandler.getDocumentsIDS();
-		Enumeration ids = documentsHash.keys();
-		while (ids.hasMoreElements()) {
-			String id = (String) ids.nextElement();
-			Document d = documentsHash.get(id);
+//		Enumeration ids = documentsHash.keys();
+		ArrayList<String> documentIDs = dataset.getDocumentsIDS();
+		for (int i = 0; i < documentIDs.size(); i++) {
+			Document d = documentsHash.get(documentIDs.get(i));
 			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
 			cig.clusterDocument(d);
 			
-		}		
+		}
+//		while (ids.hasMoreElements()) {
+//			String id = (String) ids.nextElement();
+//			Document d = documentsHash.get(id);
+//			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
+//			cig.clusterDocument(d);
+//			
+//		}		
 		long endTime = System.currentTimeMillis();
 		cig.registerShutdownHook();
 		CIGMeasure measure = new CIGMeasure();
@@ -353,7 +361,7 @@ public class CIG {
 		System.out.println("F-Measure = "+ measure.getFmeasure());
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime) * 2.4);
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime) * 4.3);
 		System.out.println("Alpha Value = "+ cig.getAlpha());
 		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");
@@ -365,8 +373,8 @@ public class CIG {
 	
 	public static void main(String[] args) throws Exception {
 		
-		double alpha = 0.0;
-		double similairtyThreshold = 0.15;
+		double alpha = 1.0;
+		double similairtyThreshold = 0.05;
 		CIG.run(alpha, similairtyThreshold);
 
 	}
