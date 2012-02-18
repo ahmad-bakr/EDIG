@@ -18,6 +18,7 @@ public abstract class Dataset implements DatasetLoader{
     	boolean createNewDir = (new File(modifiedDatasetPath+"/"+categoryName)).mkdirs();
   		String[] docsInCategory = new File(originalDatasetPath+"/"+categoryName).list();
     	for (int j = 0; j < numberOfDocsPerCat; j++) {
+    		if (j >= docsInCategory.length) break;
     		String documentName = docsInCategory[j];
     		copyfile(originalDatasetPath+"/"+categoryName+"/"+documentName, modifiedDatasetPath+"/"+categoryName+"/"+documentName);
     	}
