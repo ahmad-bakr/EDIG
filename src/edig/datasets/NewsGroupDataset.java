@@ -63,7 +63,7 @@ public class NewsGroupDataset extends Dataset{
 	private String getFirstNWords(String s){
 		String [] arr = s.split(" ");
 		String str = "";
-		for (int i = 0; i < 200; i++) {
+		for (int i = 0; i < 250; i++) {
 			if (i >= arr.length) break;
 			str += arr[i];
 		}
@@ -104,10 +104,7 @@ public class NewsGroupDataset extends Dataset{
 	        body +=  str.replaceAll(">", "").toLowerCase().replaceAll("(\\r|\\n)", ". ").replaceAll("\\s+", " ");
         }
         in.close();
-        System.out.println(title);
-        System.out.println(body);
-        System.out.println("**************************************************************");
-        Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
+        Document stemmedDocument = DocumentManager.createDocument(documentName, title, getFirstNWords(body));
 				stemmedDocument.setOrginalCluster(categoryName);
 				this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
 				this.documentsIDS.add(stemmedDocument.getId());
@@ -126,6 +123,7 @@ public class NewsGroupDataset extends Dataset{
 		System.out.println("ID = "+d.getId());
 		System.out.println("Title Words Count= "+d.getNumberOfTitleWords());
 		System.out.println("Body words Count= "+ d.getNumberOfBodyWords());
+		System.out.println(d.getOrginalCluster());
 	}
 
 }

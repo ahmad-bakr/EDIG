@@ -22,6 +22,7 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import edig.datasets.DatasetLoader;
+import edig.datasets.NewsGroupDataset;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
@@ -44,7 +45,7 @@ public class CIG {
 	private double alpha ;
 	Hashtable<String,Neo4jCluster> clustersList;
 	
-	public CIG(double alpha, double simThreshold) {
+	public CIG(double alpha, double simThreshold, DatasetLoader dataset) {
 		this.alpha = alpha;
 		this.similarityThreshold = simThreshold;
 		this.clustersList = new Hashtable<String,Neo4jCluster>();
@@ -52,7 +53,7 @@ public class CIG {
 		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/EDIG");
 		this.nodeIndex = graphDb.index().forNodes("nodes");
 		this.edgesIndex = graphDb.index().forRelationships("relationships");
-		this.datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		this.datasetHandler = dataset;// = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
 	}
 	
 	public double getAlpha() {
@@ -313,9 +314,11 @@ public class CIG {
 
 
 	public static void main(String[] args) throws Exception {
-		double alpha = 0.0;
-		double similairtyThreshold = 0.2;
-		CIG cig = new CIG(alpha, similairtyThreshold);
+//		DatasetLoader dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		DatasetLoader dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
+		double alpha = 1.0;
+		double similairtyThreshold = 0.1;
+		CIG cig = new CIG(alpha, similairtyThreshold, dataset);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		datasetHandler.loadDocuments();
 		long startTime = System.currentTimeMillis();
@@ -333,7 +336,7 @@ public class CIG {
 		System.out.println("F-Measure = "+ measure.getFmeasure());
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime) * 3);
 		System.out.println("Alpha Value = "+ cig.getAlpha());
 		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");
