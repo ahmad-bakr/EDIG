@@ -313,8 +313,8 @@ public class CIG {
 
 
 	public static void main(String[] args) throws Exception {
-		double alpha = 0.9;
-		double similairtyThreshold = 0.4;
+		double alpha = 0.0;
+		double similairtyThreshold = 0.2;
 		CIG cig = new CIG(alpha, similairtyThreshold);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		datasetHandler.loadDocuments();
@@ -334,6 +334,8 @@ public class CIG {
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
 		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("Alpha Value = "+ cig.getAlpha());
+		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");
 	}
 	
