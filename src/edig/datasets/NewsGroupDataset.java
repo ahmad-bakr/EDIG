@@ -1,6 +1,10 @@
 package edig.datasets;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -42,10 +46,27 @@ public class NewsGroupDataset extends Dataset{
     	for (int j = 0; j < docsInCategory.length; j++) {
     		this.numberOfDocument++;
     		String documentName = docsInCategory[j];
-    		File input = new File(this.datasetPath+"/"+categoryName+"/"+documentName);
-    		
-    		String title = "";
+    		FileInputStream fstream = new FileInputStream(this.datasetPath+"/"+categoryName+"/"+documentName);
+        DataInputStream in = new DataInputStream(fstream);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String str;    		
+    		String title =  categoryName;
 				String body = "";
+
+        while ((str = br.readLine()) != null) {
+	        if(str.contains("Subject:")){
+	        	title +=  " "+ str.replace("Subject:", "");
+	        	continue;
+	        }
+	        else if(str.contains("Newsgroups:") || str.contains("Path:") || str.contains("From:") || str.contains("Message-ID:") || str.contains("Sender:") ||
+	        		 str.contains("Lines:") || str.contains("References:") || str.contains("Date:") || str.contains("Article-I.D.:") || str.contains("Expires:") || (str.length() < 4)
+	        		 || str.contains("Followup-To:") || str.contains(".com")
+	        		 ){
+	        	 		continue;
+	        }
+	        body +=  str.replaceAll(">", "").toLowerCase().replaceAll("(\\r|\\n)", ". ").replaceAll("\\s+", " ");
+        }
+        in.close();
 				Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
 				stemmedDocument.setOrginalCluster(categoryName);
 				this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
@@ -54,6 +75,9 @@ public class NewsGroupDataset extends Dataset{
 		}// end loop over categories
 		return this.documentHash;
 	}
+	
+	
+	
 
 	@Override
 	public Document getDocument(String documentID) {
