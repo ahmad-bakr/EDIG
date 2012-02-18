@@ -3,6 +3,7 @@ package edig.clustering.algorithms;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -311,23 +312,48 @@ public class CIG {
 		
 		return selectedClusterID;
 	}
+	
 
+	public static boolean deleteDir(File dir) {
+    if (dir.isDirectory()) {
+        String[] children = dir.list();
+        for (int i=0; i<children.length; i++) {
+            boolean success = deleteDir(new File(dir, children[i]));
+            if (!success) {
+                return false;
+            }
+        }
+    }
+
+    // The directory is now empty so delete it
+    return dir.delete();
+}
 
 	public static void main(String[] args) throws Exception {
 //		DatasetLoader dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
-		DatasetLoader dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
-		double alpha = 1.0;
-		double similairtyThreshold = 0.1;
+		CIG.deleteDir(new File("/media/disk/master/Noe4j/EDIG"));
+		NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
+		double alpha = 0.8;
+		double similairtyThreshold = 0.15;
 		CIG cig = new CIG(alpha, similairtyThreshold, dataset);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
-		datasetHandler.loadDocuments();
+		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
 		long startTime = System.currentTimeMillis();
 		ArrayList<String> documentsIDs = datasetHandler.getDocumentsIDS();
-		for (int i = 0; i < documentsIDs.size(); i++) {
-			Document d = datasetHandler.getDocument(documentsIDs.get(i));
+		Enumeration ids = documentsHash.keys();
+		while (ids.hasMoreElements()) {
+			String id = (String) ids.nextElement();
+			Document d = documentsHash.get(id);
 			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
 			cig.clusterDocument(d);
+			
 		}
+		
+//		for (int i = 0; i < documentsIDs.size(); i++) {
+//			Document d = datasetHandler.getDocument(documentsIDs.get(i));
+//			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
+//			cig.clusterDocument(d);
+//		}
 		long endTime = System.currentTimeMillis();
 		cig.registerShutdownHook();
 		CIGMeasure measure = new CIGMeasure();
@@ -336,7 +362,7 @@ public class CIG {
 		System.out.println("F-Measure = "+ measure.getFmeasure());
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime) * 3);
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime) * 2.4);
 		System.out.println("Alpha Value = "+ cig.getAlpha());
 		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");

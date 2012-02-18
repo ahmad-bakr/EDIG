@@ -34,6 +34,11 @@ public class NewsGroupDataset extends Dataset{
 		this.classDocumentCount = new Hashtable<String, Integer>();
 	}
 
+	public void createNewDataset(){
+		super.createDataset(originalDatasetPath, modifiedDatasetPath, 40);
+	}
+	
+	
 	@Override
 	public Document getDocument(String documentID) {
 		return this.documentHash.get(documentID);
@@ -115,15 +120,16 @@ public class NewsGroupDataset extends Dataset{
 	
 	
 	public static void main(String[] args) throws Exception {
-		DatasetLoader datasetHandler = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
-		datasetHandler.loadDocuments();
-		String documentID = datasetHandler.getDocumentsIDS().get(0);
-		System.out.println("Document count = " + datasetHandler.getDocumentsIDS().size());
-		Document d = datasetHandler.getDocument(documentID);
-		System.out.println("ID = "+d.getId());
-		System.out.println("Title Words Count= "+d.getNumberOfTitleWords());
-		System.out.println("Body words Count= "+ d.getNumberOfBodyWords());
-		System.out.println(d.getOrginalCluster());
+		NewsGroupDataset datasetHandler = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
+		datasetHandler.createNewDataset();
+//		datasetHandler.loadDocuments();
+//		String documentID = datasetHandler.getDocumentsIDS().get(0);
+//		System.out.println("Document count = " + datasetHandler.getDocumentsIDS().size());
+//		Document d = datasetHandler.getDocument(documentID);
+//		System.out.println("ID = "+d.getId());
+//		System.out.println("Title Words Count= "+d.getNumberOfTitleWords());
+//		System.out.println("Body words Count= "+ d.getNumberOfBodyWords());
+//		System.out.println(d.getOrginalCluster());
 	}
 
 }
