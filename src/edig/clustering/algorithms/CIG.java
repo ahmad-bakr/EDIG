@@ -329,12 +329,9 @@ public class CIG {
     return dir.delete();
 }
 
-	public static void main(String[] args) throws Exception {
-//		DatasetLoader dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+	public static void run(double alpha, double similairtyThreshold) throws Exception{
 		CIG.deleteDir(new File("/media/disk/master/Noe4j/EDIG"));
 		NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
-		double alpha = 0.8;
-		double similairtyThreshold = 0.15;
 		CIG cig = new CIG(alpha, similairtyThreshold, dataset);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
@@ -347,13 +344,7 @@ public class CIG {
 			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
 			cig.clusterDocument(d);
 			
-		}
-		
-//		for (int i = 0; i < documentsIDs.size(); i++) {
-//			Document d = datasetHandler.getDocument(documentsIDs.get(i));
-//			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
-//			cig.clusterDocument(d);
-//		}
+		}		
 		long endTime = System.currentTimeMillis();
 		cig.registerShutdownHook();
 		CIGMeasure measure = new CIGMeasure();
@@ -366,6 +357,35 @@ public class CIG {
 		System.out.println("Alpha Value = "+ cig.getAlpha());
 		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");
+
+		
+		
 	}
+	
+	
+	public static void main(String[] args) throws Exception {
+		
+		double alpha = 0.0;
+		double similairtyThreshold = 0.15;
+		CIG.run(alpha, similairtyThreshold);
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 }
