@@ -7,6 +7,7 @@ import java.util.Hashtable;
 import edig.datasets.DatasetLoader;
 import edig.datasets.NewsGroupDataset;
 import edig.datasets.ReutersDataset;
+import edig.datasets.SWDataset;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
@@ -173,10 +174,10 @@ public class SingleLinkage {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/reuters");
-		ReutersDataset datasetHandler = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/SW");
+		DatasetLoader datasetHandler = new SWDataset("/media/disk/master/Master/datasets/SW");
 		long startTime = System.currentTimeMillis();
-		int numberOfClusters = 135;
+		int numberOfClusters = 4;
 		SingleLinkage sinLink = new SingleLinkage(datasetHandler, neo4jHandler, numberOfClusters);
 		Hashtable<String, Neo4jCluster> clusters = sinLink.perfrom();
 		long endTime = System.currentTimeMillis();
