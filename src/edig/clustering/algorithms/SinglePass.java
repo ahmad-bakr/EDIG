@@ -8,6 +8,7 @@ import java.util.Iterator;
 import edig.datasets.DatasetLoader;
 import edig.datasets.NewsGroupDataset;
 import edig.datasets.ReutersDataset;
+import edig.datasets.SWDataset;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
@@ -154,19 +155,20 @@ public class SinglePass {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/reuters");
-		ReutersDataset datasetHandler = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/SW");
+		DatasetLoader datasetHandler = new SWDataset("/media/disk/master/Master/datasets/SW");
+
 		long startTime = System.currentTimeMillis();
 
 		SinglePass singlePassAlgorithm = new SinglePass();
-		double threshold = 0.2;
+		double threshold = 0.0009;
 		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, threshold, 5);
 		long endTime = System.currentTimeMillis();
 
 		FMeasure fmeasureCalculate = new FMeasure();
 		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
 		System.out.println("*********************");
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime)*4.2);
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
 
 		System.out.println("******* For Threshold = " + threshold);
 		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());

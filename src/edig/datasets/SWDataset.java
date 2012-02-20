@@ -59,8 +59,8 @@ public class SWDataset implements DatasetLoader{
     		File input = new File(this.datasetPath+"/"+categoryName+"/"+documentName);
     		org.jsoup.nodes.Document doc = Jsoup.parse(input, "UTF-8", "");
     		String title =  categoryName+" "+ doc.title().replaceAll("(\\r|\\n)", ". ");
-				String body = doc.text().replaceAll("(\\r|\\n)", ". ").replaceAll("\\s+", " ");//getFirstNWords(doc.text().;
-				Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
+				String body = getFirstNWords(doc.text().replaceAll("(\\r|\\n)", ". ").replaceAll("\\s+", " "));//getFirstNWords(doc.text().;
+				Document stemmedDocument = DocumentManager.createDocument(categoryName+"_"+documentName, title, body);
 				stemmedDocument.setOrginalCluster(categoryName);
 
 				this.documentHash.put(stemmedDocument.getId(),stemmedDocument);

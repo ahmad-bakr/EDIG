@@ -25,6 +25,7 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
 import edig.datasets.DatasetLoader;
 import edig.datasets.NewsGroupDataset;
 import edig.datasets.ReutersDataset;
+import edig.datasets.SWDataset;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
@@ -333,7 +334,9 @@ public class CIG {
 	public static void run(double alpha, double similairtyThreshold) throws Exception{
 		CIG.deleteDir(new File("/media/disk/master/Noe4j/EDIG"));
 		//NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
-		ReutersDataset dataset = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
+	//	ReutersDataset dataset = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
+		SWDataset dataset = new SWDataset("/media/disk/master/Master/datasets/SW");
+
 		CIG cig = new CIG(alpha, similairtyThreshold, dataset);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
@@ -361,7 +364,7 @@ public class CIG {
 		System.out.println("F-Measure = "+ measure.getFmeasure());
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime) * 4.3);
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
 		System.out.println("Alpha Value = "+ cig.getAlpha());
 		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");
@@ -373,8 +376,8 @@ public class CIG {
 	
 	public static void main(String[] args) throws Exception {
 		
-		double alpha = 0.0;
-		double similairtyThreshold = 0.15;
+		double alpha = 1.0;
+		double similairtyThreshold = 0.05;
 		CIG.run(alpha, similairtyThreshold);
 
 	}
