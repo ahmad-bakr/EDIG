@@ -6,6 +6,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import edig.datasets.DatasetLoader;
+import edig.datasets.NewsGroupDataset;
+import edig.datasets.ReutersDataset;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
@@ -28,7 +30,7 @@ public class SinglePass {
 		while (e.hasMoreElements()) {
 			Hashtable<String, Double> candidateClustersHash = new Hashtable<String, Double>();
 			String documentID = (String) e.nextElement();
-	//		System.out.println("Processing document "+ documentID );
+			System.out.println("Processing document "+ documentID);
 			Document document = docsHash.get(documentID);
 			Neo4jDocument neo4jDocument = neo4jHandler.loadDocument(document);
 			boolean clusteredYet = false;
@@ -116,7 +118,6 @@ public class SinglePass {
 			Neo4jDocument neo4jDocument = (Neo4jDocument) iterator.next();
 			similairty += similairtyCalculator.calculateSimilarity(document, neo4jDocument, datasetHandler.numberOfDocuments());
 		}
-		System.out.println(similairty/clusterDocuments.size());
 		return similairty/clusterDocuments.size();
 	}
 	
@@ -153,19 +154,19 @@ public class SinglePass {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
-		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/reuters");
+		ReutersDataset datasetHandler = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
 		long startTime = System.currentTimeMillis();
 
 		SinglePass singlePassAlgorithm = new SinglePass();
-		double threshold = 0.13;
+		double threshold = 0.2;
 		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, threshold, 5);
 		long endTime = System.currentTimeMillis();
 
 		FMeasure fmeasureCalculate = new FMeasure();
 		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
 		System.out.println("*********************");
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime)*4.2);
 
 		System.out.println("******* For Threshold = " + threshold);
 		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());

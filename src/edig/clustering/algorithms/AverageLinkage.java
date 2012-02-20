@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import com.aliasi.cluster.LatentDirichletAllocation;
 
 import edig.datasets.DatasetLoader;
+import edig.datasets.NewsGroupDataset;
+import edig.datasets.ReutersDataset;
 import edig.datasets.UWCANDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
@@ -174,23 +176,24 @@ public class AverageLinkage {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
-		DatasetLoader datasetHandler = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/reuters");
+		ReutersDataset datasetHandler = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
 		long startTime = System.currentTimeMillis();
-		int numberOfClusters = 70;
+		int numberOfClusters = 135;
 		AverageLinkage avgLink = new AverageLinkage(datasetHandler, neo4jHandler, numberOfClusters);
 		Hashtable<String, Neo4jCluster> clusters = avgLink.perfrom();
 		long endTime = System.currentTimeMillis();
 		FMeasure fmeasureCalculate = new FMeasure();
 		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
 		System.out.println("*********************");
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime) * 4.5);
 
 		System.out.println("******* For Number of clusters = " + numberOfClusters);
 		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());
 		System.out.println("Precision = "+ fmeasureCalculate.getPrecision());
 		System.out.println("Recall = "+ fmeasureCalculate.getRecall());
 		System.out.println("*********************");
+		neo4jHandler.registerShutdownHook();
 
 	}
 	
