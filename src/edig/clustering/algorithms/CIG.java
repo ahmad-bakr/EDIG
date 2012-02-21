@@ -341,21 +341,21 @@ public class CIG {
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
 		long startTime = System.currentTimeMillis();
-//		Enumeration ids = documentsHash.keys();
-		ArrayList<String> documentIDs = dataset.getDocumentsIDS();
-		for (int i = 0; i < documentIDs.size(); i++) {
-			Document d = documentsHash.get(documentIDs.get(i));
-			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
-			cig.clusterDocument(d);
-			
-		}
-//		while (ids.hasMoreElements()) {
-//			String id = (String) ids.nextElement();
-//			Document d = documentsHash.get(id);
+		Enumeration ids = documentsHash.keys();
+//		ArrayList<String> documentIDs = dataset.getDocumentsIDS();
+//		for (int i = 0; i < documentIDs.size(); i++) {
+//			Document d = documentsHash.get(documentIDs.get(i));
 //			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
 //			cig.clusterDocument(d);
 //			
-//		}		
+//		}
+		while (ids.hasMoreElements()) {
+			String id = (String) ids.nextElement();
+			Document d = documentsHash.get(id);
+			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
+			cig.clusterDocument(d);
+			
+		}		
 		long endTime = System.currentTimeMillis();
 		cig.registerShutdownHook();
 		CIGMeasure measure = new CIGMeasure();
@@ -376,8 +376,8 @@ public class CIG {
 	
 	public static void main(String[] args) throws Exception {
 		
-		double alpha = 1.0;
-		double similairtyThreshold = 0.05;
+		double alpha = 0.0;
+		double similairtyThreshold = 0.001;
 		CIG.run(alpha, similairtyThreshold);
 
 	}
