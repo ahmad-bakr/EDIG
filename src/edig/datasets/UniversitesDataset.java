@@ -101,9 +101,11 @@ public class UniversitesDataset extends Dataset {
 	    		String documentName = docsInCategory[j];
 	    		File input = new File(this.datasetPath+"/"+categoryName+"/"+documentName);
 	    		org.jsoup.nodes.Document doc = Jsoup.parse(input, "UTF-8", "");
-	    		String title = categoryName+" "+ doc.head().text().replaceAll("(\\r|\\n)", ". ");
-					String body = getFirstNWords(doc.body().text().replaceAll("(\\r|\\n)", ". "));
-					Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
+	    		String title = categoryName+" "+ doc.title().replaceAll("(\\r|\\n)", ". ");
+	    		String body =  getFirstNWords( doc.text().replaceAll("\\s+", " ")); //getFirstNWords(doc.text().replaceAll("(\\r|\\n)", ". ").replaceAll("\\s+", " "));
+	    		System.out.println(title);
+					System.out.println(body);
+					Document stemmedDocument = DocumentManager.createDocument(categoryName+title, title, body);
 					stemmedDocument.setOrginalCluster(categoryName);
 					this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
 					this.documentsIDS.add(stemmedDocument.getId());
@@ -113,8 +115,8 @@ public class UniversitesDataset extends Dataset {
 		}
 
 		
-		public static void main(String[] args) {
-			UniversitesDataset u = new UniversitesDataset("");
-			u.prepareDataset();
+		public static void main(String[] args) throws Exception {
+			UniversitesDataset u = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites");
+			u.loadDocuments();
 		}
 }

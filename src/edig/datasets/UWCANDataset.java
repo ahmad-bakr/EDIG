@@ -58,6 +58,8 @@ public class UWCANDataset implements DatasetLoader {
     		org.jsoup.nodes.Document doc = Jsoup.parse(input, "UTF-8", "");
     		String title = categoryName+" "+ doc.head().text().replaceAll("(\\r|\\n)", ". ");
 				String body = getFirstNWords(doc.body().text().replaceAll("(\\r|\\n)", ". "));
+				System.out.println(title);
+				System.out.println(body);
 				Document stemmedDocument = DocumentManager.createDocument(documentName, title, body);
 				stemmedDocument.setOrginalCluster(categoryName);
 				this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
@@ -90,8 +92,9 @@ public class UWCANDataset implements DatasetLoader {
 
 
 	public static void main(String[] args) throws Exception {
-//		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
-//		Hashtable<String, Document> docsHash = dataset.loadDocuments();
+		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		dataset.loadDocuments();
+		//		Hashtable<String, Document> docsHash = dataset.loadDocuments();
 //		Enumeration e = docsHash.keys();
 //		Document doc = docsHash.get(e.nextElement());
 //		System.out.println(doc.getOrginalCluster()+ "  "+ doc.getId());

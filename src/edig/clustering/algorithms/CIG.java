@@ -376,8 +376,8 @@ public class CIG {
 	
 	public static void main(String[] args) throws Exception {
 		
-		double alpha = 0.0;
-		double similairtyThreshold = 0.001;
+		double alpha = 9.0;
+		double similairtyThreshold = 0.05;
 		CIG.run(alpha, similairtyThreshold);
 
 	}
