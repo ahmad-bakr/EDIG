@@ -3,6 +3,7 @@ package edig.clustering.algorithms;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -21,6 +22,8 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import edig.datasets.DatasetLoader;
+import edig.datasets.SWDataset;
+import edig.datasets.UWCANDataset;
 import edig.datasets.UniversitesDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jHandler;
@@ -29,6 +32,7 @@ import edig.document.similarity.DDSimilairty;
 import edig.entites.Document;
 import edig.entites.Sentence;
 import edig.entites.Word;
+import edig.evaluations.CIGMeasure;
 
 public class DIG {
 	private  GraphDatabaseService graphDb;
@@ -39,14 +43,14 @@ public class DIG {
 	private double similarityThreshold ;
 	private double alpha ;
 	Hashtable<String,Neo4jCluster> clustersList;
-	Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/universities");
+	Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/UWCAN");
 
 	public DIG(double alpha, double simThreshold, DatasetLoader dataset) {
 		this.alpha = alpha;
 		this.similarityThreshold = simThreshold;
 		this.clustersList = new Hashtable<String,Neo4jCluster>();
 		this.clusterCounter = 1;
-		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/uni");
+		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/uwcan_clusters");
 		this.nodeIndex = graphDb.index().forNodes("nodes");
 		this.edgesIndex = graphDb.index().forRelationships("relationships");
 		this.datasetHandler = dataset;// = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
@@ -316,4 +320,58 @@ public class DIG {
 		return s;
 	}
 	
+	public static void run(double alpha, double similairtyThreshold) throws Exception{
+		CIG.deleteDir(new File("/media/disk/master/Noe4j/uwcan_clusters"));
+		//NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
+	//	ReutersDataset dataset = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
+		//SWDataset dataset = new SWDataset("/media/disk/master/Master/datasets/SW");
+	//	UniversitesDataset dataset = new UniversitesDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		DatasetLoader dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+
+		DIG dig = new DIG(alpha, similairtyThreshold, dataset);
+		DatasetLoader datasetHandler = dig.getDatasetHandler();
+		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
+		long startTime = System.currentTimeMillis();
+		Enumeration ids = documentsHash.keys();
+		ArrayList<String> documentIDs = dataset.getDocumentsIDS();
+		for (int i = 0; i < documentIDs.size(); i++) {
+			Document d = documentsHash.get(documentIDs.get(i));
+			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
+			dig.clusterDocument(d);
+			
+		}
+//		while (ids.hasMoreElements()) {
+//			String id = (String) ids.nextElement();
+//			Document d = documentsHash.get(id);
+//			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
+//			cig.clusterDocument(d);
+//			
+//		}		
+		long endTime = System.currentTimeMillis();
+		dig.registerShutdownHook();
+		CIGMeasure measure = new CIGMeasure();
+		measure.calculate(dig.getClustersList(), datasetHandler);
+		System.out.println("*********************************************************");
+		System.out.println("F-Measure = "+ measure.getFmeasure());
+		System.out.println("Precision = "+ measure.getPrecision());
+		System.out.println("Recall = "+ measure.getRecall());
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("Alpha Value = "+ dig.getAlpha());
+		System.out.println("Similarity Threshold = " +dig.getSimilarityThreshold());
+		System.out.println("*********************************************************");
+
+		
+		
+	}
+	
+
+	
+	public static void main(String[] args) throws Exception {
+		
+		double alpha = 0.9;
+		double similairtyThreshold = 0.13;
+		DIG.run(alpha, similairtyThreshold);
+
+		
+	}
 }
