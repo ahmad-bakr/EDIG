@@ -27,6 +27,7 @@ import edig.datasets.NewsGroupDataset;
 import edig.datasets.ReutersDataset;
 import edig.datasets.SWDataset;
 import edig.datasets.UWCANDataset;
+import edig.datasets.UniversitesDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
 import edig.dig.representation.Neo4jHandler;
@@ -53,7 +54,7 @@ public class CIG {
 		this.similarityThreshold = simThreshold;
 		this.clustersList = new Hashtable<String,Neo4jCluster>();
 		this.clusterCounter = 1;
-		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/EDIG");
+		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/uni");
 		this.nodeIndex = graphDb.index().forNodes("nodes");
 		this.edgesIndex = graphDb.index().forRelationships("relationships");
 		this.datasetHandler = dataset;// = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
@@ -332,30 +333,31 @@ public class CIG {
 }
 
 	public static void run(double alpha, double similairtyThreshold) throws Exception{
-		CIG.deleteDir(new File("/media/disk/master/Noe4j/EDIG"));
+		CIG.deleteDir(new File("/media/disk/master/Noe4j/uni"));
 		//NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
 	//	ReutersDataset dataset = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
-		SWDataset dataset = new SWDataset("/media/disk/master/Master/datasets/SW");
+		//SWDataset dataset = new SWDataset("/media/disk/master/Master/datasets/SW");
+		UniversitesDataset dataset = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
 
 		CIG cig = new CIG(alpha, similairtyThreshold, dataset);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
 		long startTime = System.currentTimeMillis();
 		Enumeration ids = documentsHash.keys();
-//		ArrayList<String> documentIDs = dataset.getDocumentsIDS();
-//		for (int i = 0; i < documentIDs.size(); i++) {
-//			Document d = documentsHash.get(documentIDs.get(i));
-//			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
-//			cig.clusterDocument(d);
-//			
-//		}
-		while (ids.hasMoreElements()) {
-			String id = (String) ids.nextElement();
-			Document d = documentsHash.get(id);
+		ArrayList<String> documentIDs = dataset.getDocumentsIDS();
+		for (int i = 0; i < documentIDs.size(); i++) {
+			Document d = documentsHash.get(documentIDs.get(i));
 			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
 			cig.clusterDocument(d);
 			
-		}		
+		}
+//		while (ids.hasMoreElements()) {
+//			String id = (String) ids.nextElement();
+//			Document d = documentsHash.get(id);
+//			System.out.println("Processing Document " + d.getId() + "From class " + d.getOrginalCluster() );
+//			cig.clusterDocument(d);
+//			
+//		}		
 		long endTime = System.currentTimeMillis();
 		cig.registerShutdownHook();
 		CIGMeasure measure = new CIGMeasure();
@@ -364,7 +366,7 @@ public class CIG {
 		System.out.println("F-Measure = "+ measure.getFmeasure());
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime)*12);
 		System.out.println("Alpha Value = "+ cig.getAlpha());
 		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");
@@ -376,8 +378,8 @@ public class CIG {
 	
 	public static void main(String[] args) throws Exception {
 		
-		double alpha = 9.0;
-		double similairtyThreshold = 0.05;
+		double alpha = 0.0;
+		double similairtyThreshold = 0.15;
 		CIG.run(alpha, similairtyThreshold);
 
 	}

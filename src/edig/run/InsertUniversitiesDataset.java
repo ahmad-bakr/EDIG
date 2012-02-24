@@ -12,7 +12,7 @@ import edig.entites.Document;
 public class InsertUniversitiesDataset {
 	public static void main(String[] args) throws Exception {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/universities");
-		UniversitesDataset datasetHandler = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites");
+		UniversitesDataset datasetHandler = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
 		Hashtable<String, Document> docsHash = datasetHandler.loadDocuments();
 		Enumeration e = docsHash.keys();
 		while (e.hasMoreElements()) {

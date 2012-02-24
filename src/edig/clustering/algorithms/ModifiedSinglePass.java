@@ -11,6 +11,7 @@ import edig.datasets.NewsGroupDataset;
 import edig.datasets.ReutersDataset;
 import edig.datasets.SWDataset;
 import edig.datasets.UWCANDataset;
+import edig.datasets.UniversitesDataset;
 import edig.dig.representation.Neo4jCluster;
 import edig.dig.representation.Neo4jDocument;
 import edig.dig.representation.Neo4jHandler;
@@ -155,17 +156,17 @@ public class ModifiedSinglePass {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/SW");
-		DatasetLoader datasetHandler = new SWDataset("/media/disk/master/Master/datasets/SW");
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/universities");
+		UniversitesDataset datasetHandler = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
 		long startTime = System.currentTimeMillis();
 		ModifiedSinglePass singlePassAlgorithm = new ModifiedSinglePass();
-		double threshold = 0.009;
+		double threshold = 0.1;
 		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, threshold, 5);
 		long endTime = System.currentTimeMillis();
 		FMeasure fmeasureCalculate = new FMeasure();
 		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
 		System.out.println("*********************");
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime)*12);
 		System.out.println("******* For Threshold = " + threshold);
 		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());
 		System.out.println("Precision = "+ fmeasureCalculate.getPrecision());

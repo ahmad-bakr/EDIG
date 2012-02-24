@@ -47,6 +47,11 @@ public class UniversitesDataset extends Dataset {
 				}
 	    }
 		}
+		
+		
+		public void createNewDataset(){
+			super.createDataset("/media/disk/master/Master/datasets/four_universites", "/media/disk/master/Master/datasets/four_universites_mod", 50);
+		}
 
 		
 		@Override
@@ -103,8 +108,6 @@ public class UniversitesDataset extends Dataset {
 	    		org.jsoup.nodes.Document doc = Jsoup.parse(input, "UTF-8", "");
 	    		String title = categoryName+" "+ doc.title().replaceAll("(\\r|\\n)", ". ");
 	    		String body =  getFirstNWords( doc.text().replaceAll("\\s+", " ")); //getFirstNWords(doc.text().replaceAll("(\\r|\\n)", ". ").replaceAll("\\s+", " "));
-	    		System.out.println(title);
-					System.out.println(body);
 					Document stemmedDocument = DocumentManager.createDocument(categoryName+title, title, body);
 					stemmedDocument.setOrginalCluster(categoryName);
 					this.documentHash.put(stemmedDocument.getId(),stemmedDocument);
@@ -117,6 +120,8 @@ public class UniversitesDataset extends Dataset {
 		
 		public static void main(String[] args) throws Exception {
 			UniversitesDataset u = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites");
-			u.loadDocuments();
+		//	u.loadDocuments();
+		//	System.out.println(u.getDocumentsIDS().size());
+			u.createNewDataset();
 		}
 }
