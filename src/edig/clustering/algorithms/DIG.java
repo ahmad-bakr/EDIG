@@ -21,8 +21,11 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import edig.datasets.DatasetLoader;
+import edig.datasets.UniversitesDataset;
 import edig.dig.representation.Neo4jCluster;
+import edig.dig.representation.Neo4jHandler;
 import edig.dig.representation.Neo4jNode;
+import edig.document.similarity.DDSimilairty;
 import edig.entites.Document;
 import edig.entites.Sentence;
 import edig.entites.Word;
@@ -36,6 +39,7 @@ public class DIG {
 	private double similarityThreshold ;
 	private double alpha ;
 	Hashtable<String,Neo4jCluster> clustersList;
+	Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/universities");
 
 	public DIG(double alpha, double simThreshold, DatasetLoader dataset) {
 		this.alpha = alpha;
@@ -153,14 +157,14 @@ public class DIG {
 }
 
 
-	public void updateTheGraph(Document doc, String clusterID) throws Exception{
-		  Neo4jCluster cluster = this.clustersList.get(clusterID);
-			double numberOfDocumentsInTheCluster = this.clustersList.get(clusterID).getDocumentIDs().size();
+	public void updateTheGraph(Document doc) throws Exception{
 			ArrayList<Sentence> sentencesList = doc.getSentences();
+			String clusterID = doc.getId();
 			for (int sentenceIndex = 0; sentenceIndex < sentencesList.size(); sentenceIndex++) {
 				Sentence currentSentence = sentencesList.get(sentenceIndex);
 				ArrayList<Word> currentSentenceWords = currentSentence.getWords();
 				//Loop for the words of the current sentence
+				
 				Word previousWord = null;
 				Word currentWord = null;
 				Node previousNodeInTheGraph = null;
@@ -168,13 +172,13 @@ public class DIG {
 				for (int wordIndex = 0; wordIndex < currentSentenceWords.size(); wordIndex++) {
 				  currentWord = currentSentenceWords.get(wordIndex);
 				  currentNodeInGraph = nodeIndex.get(Neo4jNode.WORD_PROPERTY, currentWord.getContent()).getSingle();				
-					double wordValueForTheDocument = calculateWordValue(doc, currentWord) / numberOfDocumentsInTheCluster;
+					double wordValueForTheDocument = calculateWordValue(doc, currentWord) ;
 					// update the cluster similarity table for the nodes
 					Hashtable<String, Double> clusterImportanceTable = (Hashtable<String, Double>) deserializeObject((byte[]) currentNodeInGraph.getProperty(Neo4jNode.CLUSTER_IMPORTANCE)); 
-					if (clusterImportanceTable.containsKey(clusterID)){
-						clusterImportanceTable.put(clusterID, clusterImportanceTable.get(clusterID)+wordValueForTheDocument);
+					if (clusterImportanceTable.containsKey(doc.getId())){
+						clusterImportanceTable.put(doc.getId(), clusterImportanceTable.get(doc.getId())+wordValueForTheDocument);
 					}else{
-						clusterImportanceTable.put(clusterID, wordValueForTheDocument);
+						clusterImportanceTable.put(doc.getId(), wordValueForTheDocument);
 					}
 					currentNodeInGraph.setProperty(Neo4jNode.CLUSTER_IMPORTANCE, serializeObject(clusterImportanceTable));
 					nodeIndex.add(currentNodeInGraph, Neo4jNode.WORD_PROPERTY, currentWord.getContent());
@@ -189,7 +193,7 @@ public class DIG {
 							clusterImportanceTableForEdge.put(clusterID, clusterImportanceTableForEdge.get(clusterID)+1);
 						}else{
 							clusterImportanceTableForEdge.put(clusterID, 1.0);
-							cluster.incrementLength(1);
+							
 						}
 						edge.setProperty("cluster_table", serializeObject(clusterImportanceTableForEdge));
 						edgesIndex.add(edge, "edge", edgeID);
@@ -263,13 +267,13 @@ public class DIG {
 			this.clustersList.put(c.getId(), c);
 			c.addDcoument(doc.getId());
 			this.clusterCounter++;
-			updateTheGraph(doc, closestCluster);
+			updateTheGraph(doc);
 		}else{
 			Neo4jCluster c = this.clustersList.get(closestCluster);
 			c.incrementMagnitude(documentMagnitude);
 			c.incrementEdgesMagnitude(edgesMagnitude);
 			c.addDcoument(doc.getId());
-			updateTheGraph(doc, closestCluster);
+			updateTheGraph(doc);
 		}
 		tx.success();
 		} finally {
@@ -277,19 +281,18 @@ public class DIG {
 		}
 	}
 	
-	public String getClosestCluster(Document doc, double documentMagnitude, int numberOfEdgesOfDocument ,Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges){
-		Enumeration clusterIDs = clusterSimilarityForWords.keys();
+	public String getClosestCluster(Document doc, double documentMagnitude, int numberOfEdgesOfDocument ,Hashtable<String, Double> clusterSimilarityForWords, Hashtable<String, Double> clusterSimilarityForEdges) throws Exception{
+		Enumeration documentsIDs = clusterSimilarityForWords.keys();
 		double selectedSimilairty = -1;
 		String selectedClusterID = "";
-		while (clusterIDs.hasMoreElements()) {
-			String clusterID = (String) clusterIDs.nextElement();
-			Neo4jCluster cluster = clustersList.get(clusterID);
+		while (documentsIDs.hasMoreElements()) {
+			String documentID = (String) documentsIDs.nextElement();
+			Neo4jCluster cluster = clustersList.get(documentID);
 		//	System.out.println("check document "+doc.getId()+ " to cluster "+ clusterID);	
-			double wordsWeight = alpha * (  Math.sqrt(clusterSimilarityForWords.get(clusterID)) / ( Math.sqrt(documentMagnitude) + Math.sqrt(cluster.getMagnitude()))  ); 
-		
+			double wordsWeight = alpha * calculateCosineSimilairty(doc.getId(), documentID );
 			double edgesWeight = 0.0;
-			if (clusterSimilarityForEdges.containsKey(clusterID)){
-				double overlapping = clusterSimilarityForEdges.get(clusterID);
+			if (clusterSimilarityForEdges.containsKey(documentID)){
+				double overlapping = clusterSimilarityForEdges.get(documentID);
 				edgesWeight = overlapping/(numberOfEdgesOfDocument + cluster.getEdgesMagnitude());
 			//	System.out.println("edges ="+edgesWeight);
 			}
@@ -297,7 +300,7 @@ public class DIG {
 			double similairty = wordsWeight + edgesWeight ; 
 	//		System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
 			if (similairty > similarityThreshold && similairty > selectedSimilairty){
-				selectedClusterID = clusterID;
+				selectedClusterID = documentID;
 				selectedSimilairty = similairty;
 			}
 		}
@@ -305,6 +308,12 @@ public class DIG {
 		return selectedClusterID;
 	}
 	
-
+	public double calculateCosineSimilairty(String id1, String id2) throws IOException, ClassNotFoundException{
+		DDSimilairty sim = new DDSimilairty();
+		Document d1 = datasetHandler.getDocument(id1);
+		Document d2 = datasetHandler.getDocument(id2);
+		double s = sim.calculateSimilarity(neo4jHandler.loadDocument(d1),neo4jHandler.loadDocument(d2), datasetHandler.numberOfDocuments()) ;
+		return s;
+	}
 	
 }
