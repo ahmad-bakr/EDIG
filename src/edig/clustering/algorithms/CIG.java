@@ -54,7 +54,7 @@ public class CIG {
 		this.similarityThreshold = simThreshold;
 		this.clustersList = new Hashtable<String,Neo4jCluster>();
 		this.clusterCounter = 1;
-		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/uni");
+		this.graphDb = new EmbeddedGraphDatabase("/media/disk/master/Noe4j/reu_cig");
 		this.nodeIndex = graphDb.index().forNodes("nodes");
 		this.edgesIndex = graphDb.index().forRelationships("relationships");
 		this.datasetHandler = dataset;// = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
@@ -115,7 +115,7 @@ public class CIG {
 		//loop for all clusters in the node and update the cluster similarity table for the document
 		while (clustersIDs.hasMoreElements()) {
 			String clusterID = (String) clustersIDs.nextElement();
-			double edgeValueForTheCluster = clusterImportanceTable.get(clusterID) * edgeValueInTheDocument;
+			double edgeValueForTheCluster = clusterImportanceTable.get(clusterID) + edgeValueInTheDocument;
 			if(clusterSimilairtyTableForEdges.containsKey(clusterID)){
 				clusterSimilairtyTableForEdges.put(clusterID, edgeValueForTheCluster + clusterSimilairtyTableForEdges.get(clusterID));
 			}else{
@@ -306,7 +306,6 @@ public class CIG {
 			}
 	//		System.out.println("words ="+wordsWeight);
 			double similairty = wordsWeight + edgesWeight ; 
-	//		System.out.println("Similarity calculated to cluster"+ clusterID +" is = "+similairty);
 			if (similairty > similarityThreshold && similairty > selectedSimilairty){
 				selectedClusterID = clusterID;
 				selectedSimilairty = similairty;
@@ -333,12 +332,13 @@ public class CIG {
 }
 
 	public static void run(double alpha, double similairtyThreshold) throws Exception{
-		CIG.deleteDir(new File("/media/disk/master/Noe4j/uni"));
+		CIG.deleteDir(new File("/media/disk/master/Noe4j/reu_cig"));
 		//NewsGroupDataset dataset = new NewsGroupDataset("/media/disk/master/Noe4j/datasets/20_newsgroups");
 	//	ReutersDataset dataset = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
 		//SWDataset dataset = new SWDataset("/media/disk/master/Master/datasets/SW");
-		UniversitesDataset dataset = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
-
+	//	UniversitesDataset dataset = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
+		UWCANDataset dataset = new UWCANDataset("/media/disk/master/Master/datasets/WU-CAN/webdata");
+		
 		CIG cig = new CIG(alpha, similairtyThreshold, dataset);
 		DatasetLoader datasetHandler = cig.getDatasetHandler();
 		Hashtable<String, Document> documentsHash =	datasetHandler.loadDocuments();
@@ -366,7 +366,7 @@ public class CIG {
 		System.out.println("F-Measure = "+ measure.getFmeasure());
 		System.out.println("Precision = "+ measure.getPrecision());
 		System.out.println("Recall = "+ measure.getRecall());
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime)*12);
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
 		System.out.println("Alpha Value = "+ cig.getAlpha());
 		System.out.println("Similarity Threshold = " +cig.getSimilarityThreshold());
 		System.out.println("*********************************************************");
@@ -379,7 +379,8 @@ public class CIG {
 	public static void main(String[] args) throws Exception {
 		
 		double alpha = 0.0;
-		double similairtyThreshold = 0.15;
+		double similairtyThreshold = 0.1;
+
 		CIG.run(alpha, similairtyThreshold);
 
 	}

@@ -36,7 +36,7 @@ public class ReutersDataset extends Dataset{
 	}
 	
 	public void createNewDataset(){
-		super.createDataset(originalDatasetPath, modifiedDatasetPath, 20);
+		super.createDataset(originalDatasetPath, modifiedDatasetPath, 50);
 	}
 
 	
@@ -136,12 +136,27 @@ public class ReutersDataset extends Dataset{
 		return this.documentHash;
 	}
 	
+	public static boolean deleteDir(File dir) {
+    if (dir.isDirectory()) {
+        String[] children = dir.list();
+        for (int i=0; i<children.length; i++) {
+            boolean success = deleteDir(new File(dir, children[i]));
+            if (!success) {
+                return false;
+            }
+        }
+    }
+
+    // The directory is now empty so delete it
+    return dir.delete();
+}	    
+
 	
 	public static void main(String[] args) throws Exception {
 		ReutersDataset r = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
-		r.loadDocuments();
-		
-		//		r.createNewDataset();
+		//r.loadDocuments();
+		ReutersDataset.deleteDir(new File("/media/disk/master/Noe4j/datasets/reuters_mod"));
+		r.createNewDataset();
 	}
 	
 }

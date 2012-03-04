@@ -175,23 +175,24 @@ public class SingleLinkage {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/universities");
-		UniversitesDataset datasetHandler = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/reuters");
+		ReutersDataset datasetHandler = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
 		long startTime = System.currentTimeMillis();
-		int numberOfClusters = 7;
+		int numberOfClusters = 300;
 		SingleLinkage sinLink = new SingleLinkage(datasetHandler, neo4jHandler, numberOfClusters);
 		Hashtable<String, Neo4jCluster> clusters = sinLink.perfrom();
 		long endTime = System.currentTimeMillis();
 		FMeasure fmeasureCalculate = new FMeasure();
 		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
 		System.out.println("*********************");
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime)*12);
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
 
 		System.out.println("******* For Number of clusters = " + numberOfClusters);
 		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());
 		System.out.println("Precision = "+ fmeasureCalculate.getPrecision());
 		System.out.println("Recall = "+ fmeasureCalculate.getRecall());
 		System.out.println("*********************");
+		neo4jHandler.registerShutdownHook();
 
 	}
 	

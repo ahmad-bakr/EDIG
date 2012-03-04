@@ -14,11 +14,16 @@ public class InsertReuters {
 		ReutersDataset datasetHandler = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
 		Hashtable<String, Document> docsHash = datasetHandler.loadDocuments();
 		Enumeration e = docsHash.keys();
+		long startTime = System.currentTimeMillis();
+
 		while (e.hasMoreElements()) {
 			Document doc = (Document) docsHash.get(e.nextElement());
 			System.out.println("Inserting document "+ doc.getId() +" from "+ doc.getOrginalCluster());
 			neo4jHandler.insertAndIndexDocument(doc);
 		}
+		long endTime = System.currentTimeMillis();
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
+		System.out.println(datasetHandler.numberOfDocuments() + " documents inserted");
 		neo4jHandler.registerShutdownHook();
 
 	}

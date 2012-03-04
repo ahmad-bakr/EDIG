@@ -50,7 +50,7 @@ public class UniversitesDataset extends Dataset {
 		
 		
 		public void createNewDataset(){
-			super.createDataset("/media/disk/master/Master/datasets/four_universites", "/media/disk/master/Master/datasets/four_universites_mod", 50);
+			super.createDataset("/media/disk/master/Master/datasets/four_universites", "/media/disk/master/Master/datasets/four_universites_mod", 130);
 		}
 
 		
@@ -116,11 +116,27 @@ public class UniversitesDataset extends Dataset {
 			}// end loop over categories
 			return this.documentHash;
 		}
+		
+		public static boolean deleteDir(File dir) {
+	    if (dir.isDirectory()) {
+	        String[] children = dir.list();
+	        for (int i=0; i<children.length; i++) {
+	            boolean success = deleteDir(new File(dir, children[i]));
+	            if (!success) {
+	                return false;
+	            }
+	        }
+	    }
+
+	    // The directory is now empty so delete it
+	    return dir.delete();
+	}	    
 
 		
 		public static void main(String[] args) throws Exception {
 			UniversitesDataset u = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites");
-		//	u.loadDocuments();
+			UniversitesDataset.deleteDir(new File("/media/disk/master/Master/datasets/four_universites_mod"));
+			//	u.loadDocuments();
 		//	System.out.println(u.getDocumentsIDS().size());
 			u.createNewDataset();
 		}

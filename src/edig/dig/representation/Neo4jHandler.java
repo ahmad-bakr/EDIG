@@ -250,16 +250,21 @@ public class Neo4jHandler {
 	public Neo4jDocument loadDocument(Document doc) throws IOException, ClassNotFoundException {
 		if (documentsCache.containsKey(doc.getId())) return documentsCache.get(doc.getId());
 		Neo4jDocument document = new Neo4jDocument(doc.getId());
-		document.setNumberOfTitleWords(doc.getNumberOfTitleWords());
-		document.setNumberOfBodyWords(doc.getNumberOfBodyWords());
-		String firstWord = doc.getSentences().get(0).getWords().get(0).getContent();
-		Node firstNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, firstWord);
-		Traverser nodesChain = firstNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, DynamicRelationshipType.withName("document_"+doc.getId()), Direction.OUTGOING);
-		for ( Node node : nodesChain )
-		{
-			document.addNode(convertToNeo4jNode(node));
+		try {
+			document.setNumberOfTitleWords(doc.getNumberOfTitleWords());
+			document.setNumberOfBodyWords(doc.getNumberOfBodyWords());
+			String firstWord = doc.getSentences().get(0).getWords().get(0).getContent();
+			Node firstNode = findNodeByProperty(Neo4jNode.WORD_PROPERTY, firstWord);
+			Traverser nodesChain = firstNode.traverse(Order.DEPTH_FIRST, StopEvaluator.END_OF_GRAPH, ReturnableEvaluator.ALL, DynamicRelationshipType.withName("document_"+doc.getId()), Direction.OUTGOING);
+			for ( Node node : nodesChain )
+			{
+				document.addNode(convertToNeo4jNode(node));
+			}
+			documentsCache.put(doc.getId(), document);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
-		documentsCache.put(doc.getId(), document);
 		return document;
 	}
 

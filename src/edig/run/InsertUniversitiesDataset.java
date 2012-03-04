@@ -14,6 +14,8 @@ public class InsertUniversitiesDataset {
 		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/universities");
 		UniversitesDataset datasetHandler = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
 		Hashtable<String, Document> docsHash = datasetHandler.loadDocuments();
+		long startTime = System.currentTimeMillis();
+
 		Enumeration e = docsHash.keys();
 		while (e.hasMoreElements()) {
 			Document doc = (Document) docsHash.get(e.nextElement());
@@ -21,6 +23,8 @@ public class InsertUniversitiesDataset {
 			neo4jHandler.insertAndIndexDocument(doc);
 		}
 		neo4jHandler.registerShutdownHook();
+		long endTime = System.currentTimeMillis();
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
 
 	}
 }

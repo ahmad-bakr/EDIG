@@ -156,20 +156,20 @@ public class SinglePass {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/universities");
-		UniversitesDataset datasetHandler = new UniversitesDataset("/media/disk/master/Master/datasets/four_universites_mod");
+		Neo4jHandler neo4jHandler = Neo4jHandler.getInstance("/media/disk/master/Noe4j/reuters");
+		ReutersDataset datasetHandler = new ReutersDataset("/media/disk/master/Noe4j/datasets/reuters_mod");
 
 		long startTime = System.currentTimeMillis();
 
 		SinglePass singlePassAlgorithm = new SinglePass();
-		double threshold = 0.008;
+		double threshold = 0.1;
 		Hashtable<String, Neo4jCluster> clusters = singlePassAlgorithm.perform(datasetHandler, neo4jHandler, threshold, 5);
 		long endTime = System.currentTimeMillis();
 
 		FMeasure fmeasureCalculate = new FMeasure();
 		fmeasureCalculate.calculate(clusters, datasetHandler, neo4jHandler);
 		System.out.println("*********************");
-		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime)*12);
+		System.out.println("Total elapsed time in execution  is :"+ (endTime-startTime));
 
 		System.out.println("******* For Threshold = " + threshold);
 		System.out.println("Fmeasure = " + fmeasureCalculate.getFmeasure());
