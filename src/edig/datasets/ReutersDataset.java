@@ -36,7 +36,7 @@ public class ReutersDataset extends Dataset{
 	}
 	
 	public void createNewDataset(){
-		super.createDataset(originalDatasetPath, modifiedDatasetPath, 50);
+		super.createDataset(originalDatasetPath, modifiedDatasetPath, 35);
 	}
 
 	
@@ -98,7 +98,7 @@ public class ReutersDataset extends Dataset{
 		String str = "";
 		for (int i = 0; i < 250; i++) {
 			if (i >= arr.length) break;
-			str += arr[i];
+			str += " "+ arr[i];
 		}
 		
 		return str;
